@@ -1,13 +1,642 @@
 /* ============================================================
-   AAAI dashboard — DATA FILE
-   This is the only file a policy/data team needs to edit when
-   figures change. Structure:
-     domains[]        -> policy & statistics indicators, by domain
-       .indicators[]  -> {code, name, def, values{country:val}, sources{country:src}, years{country:yr}}
-     demographics{}   -> code (A1, A2, B1 ...) -> {section,label,values{},years{},sources{}}
-     countries[]      -> display order used everywhere in the UI
-     meta             -> last-updated label shown in the header
-   Edit values{...}/years{...}/sources{...} in place, or replace this
-   whole file by re-exporting from the source spreadsheets.
+   AAAI — Active Ageing Index dashboard
+   Application logic. Reads everything from AAAI_DATA (data.js).
+   No build step required — open index.html directly, or host
+   the three files (index.html, styles.css, app.js, data.js) as
+   a static site.
    ============================================================ */
-const AAAI_DATA = {"domains":[{"name":"1. Policy & Statistics","desc":"Covers national ageing policies and statistical capacity to track older populations.","indicators":[{"code":"1.1","name":"Multisectoral Healthy and Active Ageing Policy","def":"Existence of a national multi-sectoral policy or plan on ageing that coordinates across different ministries (health, welfare, employment, housing, etc.) to promote healthy and active ageing. This could be a dedicated law, national policy, or action plan that…","values":{"Vietnam":"Yes","Indonesia":"Yes","Thailand":"Yes","Singapore":"Yes","Malaysia":"Yes","Japan":"https://www.japaneselawtranslation.go.jp/en/laws/view/4832 or https://www8.cao.go.jp/kourei/english/measure/kihon-e.html Last amended in 2026"},"sources":{"Vietnam":"Party’s Resolution 72","Indonesia":"Presidential Regulation of the Republic of Indonesia No. 88/2021 Concerning the National Strategy for Continuation - (STRANAS)","Thailand":"Department of Older Persons","Singapore":"ACTION PLAN FOR SUCCESSFUL AGEING 2023","Malaysia":"Ministry of Women, Family and Community Development (KPWKM); Ministry of Health (MOH)","Japan":"The Basic Law on Measures for the Aging Society"},"years":{"Vietnam":"2025","Indonesia":"2025","Thailand":"2024","Malaysia":"2011","Japan":"2026"}},{"code":"1.2","name":"Health Care Policy on NCDs for Older Persons","def":"Existence of a national policy or program addressing non-communicable diseases (NCDs) in older adults. This could be a dedicated NCD strategy that includes older persons or an ageing health policy focusing on chronic disease prevention and management…","values":{"Vietnam":"Yes","Indonesia":"Yes","Thailand":"Yes","Singapore":"Yes","Malaysia":"Yes","Japan":"https://www.mhlw.go.jp/stf/seisakunitsuite/bunya/kenkou_iryou/kenkou/kenkounippon21_00006.html"},"sources":{"Indonesia":"Law of the Republic of Indonesia No. 17/2023 Concerning Health","Thailand":"The National Plan for the Prevention and Control of Non-communicable Deseases (2023-2027), Thailand. Ministry of Public Health","Singapore":"Healthier SG: This national initiative integrates every citizen with a single family doctor to build a long-term preventive care plan. It…","Malaysia":"MOH – National Strategic Plan for NCD (2026-2030); NHMS 2025 (Older Persons Health)","Japan":"Health Japan 21 (Third Term) 2024-2035"},"years":{"Vietnam":"2021","Indonesia":"2023","Thailand":"2023 -2027","Malaysia":"2016-2025","Japan":"2024"}},{"code":"1.3","name":"National Policy on Older Adults’ Rights","def":"Existence of an officially adopted national policy, strategy, or law that explicitly frames older persons as rights-holders and commits the state to concrete actions to uphold those rights. Such a policy would cover areas like access to services, social…","values":{"Vietnam":"Yes","Indonesia":"Yes","Thailand":"Yes","Singapore":"Yes","Malaysia":"No standalone legislation","Japan":"https://www.japaneselawtranslation.go.jp/ja/laws/view/3929"},"sources":{"Indonesia":"Law of the Republic of Indonesia No. 13/1998 Concerning Welfare of the Elderly","Thailand":"The Act on the Elderly, B.E. 2546 (2003 A.D.)","Singapore":"- Action Plan for Successful Ageing - ⁠Retirement and Re-employment Act (RRA) - ⁠Vulnerable Adults Act - ⁠Workplace Fairness Act","Malaysia":"SUHAKAM; MWFCD","Japan":"Act on the Prevention of Elder Abuse and Support for Caregivers of Elderly Persons. Last amended in 2025."},"years":{"Vietnam":"Various (such as 200","Indonesia":"1998","Thailand":"2003, 2010, 2017","Japan":"2005"}},{"code":"1.4","name":"Legal Protection Against Age Discrimination","def":"Existence of national legislation prohibiting age-based discrimination (ageism), particularly in critical areas like employment and access to services. The law should make age discrimination unlawful and ideally establish an enforcement mechanism (such as an…","values":{"Vietnam":"No","Indonesia":"Yes","Thailand":"No","Singapore":"Yes","Malaysia":"No","Japan":"https://www.japaneselawtranslation.go.jp/ja/laws/view/4630"},"sources":{"Indonesia":"Ministerial Circular Letter (SE Menaker) No. M/6/HK.04/V/2025.","Thailand":"No single policy, no sigle act available","Singapore":"Ministry of Manpower (MOM) and the Tripartite Alliance for Fair and Progressive Employment Practices (TAFEP)","Malaysia":"Federal Constitution","Japan":"Act on Employment Security of Elderly Persons"},"years":{"Indonesia":"2025","Thailand":"No","Japan":"2004"}},{"code":"1.5","name":"Long-Term Care System Policy","def":"Existence of a public policy or formal system for long-term care (LTC) of older persons. This includes any national scheme (or combination of programs) to support individuals who need assistance with daily living due to age-related frailty or disability.…","values":{"Vietnam":"Yes","Indonesia":"Yes","Thailand":"Yes","Singapore":"Yes","Malaysia":"No","Japan":"https://www.japaneselawtranslation.go.jp/en/laws/view/3807"},"sources":{"Indonesia":"Law of the Republic of Indonesia No. 40/2004 Concerning National Social Security System","Thailand":"(1) Long-term care model by NHSO.…","Singapore":"CareShield Life AgeWell SG LiveWell SG","Malaysia":"Malaysia Care Strategic Framework and Action Plan 2026–2030","Japan":"Long-Term Care Insurance Act"},"years":{"Indonesia":"2004","Thailand":"2026","Malaysia":"2025","Japan":"2000"}},{"code":"1.6","name":"Climate Change/Disaster Plan Inclusive of Older Persons","def":"Existence of a national plan or strategy on climate change adaptation and/or disaster risk reduction (DRR) that explicitly recognizes older persons as a vulnerable group with specific needs/capacities, including at least one age-responsive measure. In other…","values":{"Vietnam":"Yes","Indonesia":"Maybe","Thailand":"Yes","Singapore":"Yes","Malaysia":"No","Japan":"https://www.japaneselawtranslation.go.jp/ja/laws/view/4171"},"sources":{"Indonesia":"Regulation of the National Disaster Management Agency of the Republic of Indonesia No. 1/2025 Concerning the National Disaster Management…","Thailand":"(1) Thailand National Adaptive Plan…","Singapore":"Singapore Green Plan 2030","Malaysia":"NADMA NSDRR 2021–2030","Japan":"Basic Act on Disaster Management"},"years":{"Indonesia":"2025","Thailand":"2024","Japan":"1995"}},{"code":"1.7","name":"Older Population Proportion and Distribution (Statistical Data)","def":"Availability of official statistics on the older population (aged 60+), including their proportion of the total population and distribution by sub-national levels (e.g. by region or province, urban/rural, and by sex). Essentially, this indicator checks if the…","values":{"Vietnam":"Yes","Indonesia":"Yes","Thailand":"Yes","Singapore":"Yes","Malaysia":"Yes","Japan":"https://www.e-stat.go.jp/statistics/00200521\nhttps://www.e-stat.go.jp/statistics/00200241"},"sources":{"Vietnam":"IPS (intercensal pop survey)","Indonesia":"Badan Pusat Statistik, Statistics of Aging Population 2025, Vol. 22, 2025, Catalogue no. 4104001, ISSN 2086-1036.","Thailand":"National Statistic Office. Survey of Older Persons in Thailand","Singapore":"Numbers by age, sex, and education","Malaysia":"Department of Statistics (DOSM), Malaysia","Japan":"Census and register-based statistics"},"years":{"Vietnam":"2024","Indonesia":"2024","Thailand":"2024","Malaysia":"2024","Japan":"Since 1872, the most"}},{"code":"1.8","name":"Vital Statistics (Including Cause of Death Registration)","def":"Whether the country has a complete vital registration system capturing all deaths (and other vital events) with medically certified causes of death. This indicator is set to 1 (Yes) if mortality statistics by cause are collected and published by the national…","values":{"Vietnam":"Yes","Thailand":"Yes","Singapore":"Yes","Malaysia":"Yes","Japan":"https://www.e-stat.go.jp/statistics/00450011"},"sources":{"Vietnam":"NSO, National Report on Population Registration and Statistics 2021-2024 (in Vietnamese)","Indonesia":"Ministry of Home Affairs","Thailand":"(1) NSO, Statistical Year Book Thailand 2024. (2) HART","Singapore":"Principal Causes of Death","Malaysia":"DOSM; WHO Mortality Database","Japan":"Register-based statistics then Vital Statistics since 1899"},"years":{"Vietnam":"2024","Indonesia":"2024","Thailand":"(1) 2024 (2) 2017 -","Japan":"Since 1872, the most"}},{"code":"1.9","name":"Health and Living Conditions Survey of Older Persons","def":"Availability of a nationally representative survey that focuses on older persons’ health and living conditions, or at least regularly produces data on those topics disaggregated for older age groups. This could be a dedicated Survey of Older Persons (as…","values":{"Vietnam":"Yes","Indonesia":"Yes","Thailand":"Yes","Singapore":"Yes","Malaysia":"Yes","Japan":"https://www.mhlw.go.jp/english/database/db-hss/cslc-index.html \nhttps://www.e-stat.go.jp/statistics/00450061"},"sources":{"Vietnam":"VNAS","Indonesia":"Badan Pusat Statistik, Statistics of Aging Population 2025, Vol. 22, 2025, Catalogue no. 4104001, ISSN 2086-1036.","Thailand":"(1) National Statistic Office. Survey of Older Persons in Thailand. (2) Health, Aging, and Retirement in Thailand (HART)","Singapore":"National Population Health Survey General Household Survey 2025","Malaysia":"NHMS; HIES; DOSM","Japan":"Comprehensive Survey of Living Conditions"},"years":{"Vietnam":"2022","Indonesia":"2025","Thailand":"NSO 2024; HART 2024","Japan":"2022"}},{"code":"1.10","name":"Health Care Expenditure for Older Persons (Data Availability)","def":"Whether the country can produce data on healthcare expenditures specifically for older persons. In practice, this means the country’s health accounts or surveys can disaggregate health spending by age group (e.g., how much of total health spending is for…","values":{"Vietnam":"#N/A","Indonesia":"#N/A","Thailand":"#N/A","Singapore":"#N/A","Malaysia":"#N/A","Japan":"#N/A"},"sources":{"Vietnam":"#N/A","Indonesia":"#N/A","Thailand":"#N/A","Singapore":"#N/A","Malaysia":"#N/A","Japan":"#N/A"},"years":{"Vietnam":"#N/A","Indonesia":"#N/A","Thailand":"#N/A","Singapore":"#N/A","Malaysia":"#N/A","Japan":"#N/A"}},{"code":"1.11","name":"Number of Health and Long-Term Care Workers","def":"Whether statistics are available on the number of healthcare workers and long-term care (LTC) workers catering to older persons. In practice, this means the country measures and reports the count of health professionals (doctors, nurses, etc.) and also the…","values":{"Vietnam":"Yes","Indonesia":"Yes","Thailand":"Yes","Singapore":"Yes","Malaysia":"No","Japan":"See Comments/Notes"},"sources":{"Vietnam":"GSO (2025), Statistical Yearbook 2024","Indonesia":"MoH, Indonesia Health Profile 2024, Published 2025.","Thailand":"Department of Older Persons. (2024) SITUATION OF THE THAI OLDER PERSONS 2 0 2 3","Singapore":"PROFILE OF HEALTHCARE WORKERS PROVIDING LTC","Japan":"Census and MHLW surveys"},"years":{"Vietnam":"2025","Indonesia":"2025","Thailand":"2023","Japan":"2020"}},{"code":"1.12","name":"Capacity of Long-Term Care Facilities (Data Availability)","def":"Whether the country measures the capacity of formal LTC facilities, typically in terms of the number of beds or places available for older persons who require institutional care. This includes beds in nursing homes, care homes, or similar eldercare…","values":{"Vietnam":"TBC","Indonesia":"No","Thailand":"Yes","Singapore":"Yes","Malaysia":"No","Japan":"See Comments/Notes"},"sources":{"Thailand":"Department of Older Persons. (2024) SITUATION OF THE THAI OLDER PERSONS 2 0 2 3","Singapore":"MOH","Malaysia":"Department of Social Welfare (DWS); MOH","Japan":"Census and MHLW surveys"},"years":{"Thailand":"2024"}},{"code":"1.13","name":"Availability of NTA/NTTA Data","def":"Availability of National Transfer Accounts (NTA) or National Time Transfer Accounts (NTTA) data for the country, with sufficient documentation. NTA refers to estimates of how economic resources (like income, consumption, public transfers) are distributed…","values":{"Vietnam":"Yes","Indonesia":"Yes","Thailand":"Yes","Singapore":"No","Malaysia":"Yes (NTA), NO (NTTA)","Japan":"https://www.ipss.go.jp/projects/NTA/"},"sources":{"Vietnam":"GSO’s NTA report","Indonesia":"BAPPENAS' NTA","Thailand":"NESDC & UNFPA. NaTional Transfer Accounts 2021","Malaysia":"National Transfer Accounts (NTA) Malaysia","Japan":"NTA/NTTA data"},"years":{"Vietnam":"2022","Indonesia":"2024","Thailand":"2021","Japan":"2019(NTA)\n2021(NTTA)"}},{"code":"1.14","name":"Access to Palliative/End-of-Life Care","def":"","values":{"Vietnam":"No","Indonesia":"Yes","Thailand":"Yes","Singapore":"Yes","Malaysia":"Yes"},"sources":{"Indonesia":"MoH, Regulation of the Minister of Health of the Republic of Indonesia No. 12/2025 Concerning the Ministry of Health's Strategic Plan for…","Thailand":"Natprayut, N. (2019). Access to palliative care in a tertiary care hospital in Thailand. The Clinical Academia, 43(6), 220–228.…","Singapore":"MOH","Malaysia":"MOH"},"years":{"Indonesia":"2025","Thailand":"2025"}},{"code":"1.15","name":"Barrier-Free Public Space availability","def":"","values":{"Vietnam":"No","Indonesia":"Yes","Thailand":"NA","Singapore":"Yes","Malaysia":"No"},"sources":{"Indonesia":"Ministry of Public Works and Housing","Singapore":"MOT Inclusive transport infrastructure","Malaysia":"Ministry of Housing and Local Government (KPKT); Local Authorities"},"years":{"Indonesia":"2017"}},{"code":"1.16","name":"Public transport accessibility","def":"","values":{"Vietnam":"No","Indonesia":"Yes","Thailand":"NA","Singapore":"Yes","Malaysia":"No"},"sources":{"Indonesia":"Ministerial Decree No. 14/PRT/M/2017 (Ministry of Public Works and Housing) as this is the main guideline/standard for universal design in…","Singapore":"MOT Inclusive transport infrastructure","Malaysia":"Ministry of Transport"},"years":{"Indonesia":"2017"}}]},{"name":"2. Income & Livelihood Security","desc":"Focuses on poverty, pensions, employment, financial inclusion, and income sources of older persons.","indicators":[{"code":"2.1","name":"Absolute Poverty Rate (Older Persons) -> recheck questions","def":"The percentage of older persons living below the national absolute poverty line. “Absolute poverty” refers to lacking the income required to meet basic needs in that society. Each country typically defines a national poverty line (often a per capita income or…","values":{"Vietnam":"0.0476","Indonesia":"- 8.76% for Older people living in poverty\n- 8.21% for Older people without disability living in poverty\n- 13.37% for Older people with disability living in poverty\n- 8.44% for Male older people living in poverty\n- 9.05% for Female older people living in poverty\n- 6.93% for Older people with poverty living in the city\n- 11.14% for Older people with poverty living in the village","Thailand":"0.1019","Singapore":"12% (2019)\n \n 22% (2020)\n \n 32% (2022)","Malaysia":"0.038"},"sources":{"Vietnam":"VNAS","Indonesia":"BPS, Statistics of Aging Population 2025, Vol. 22, 2025, Catalogue no. 4104001, ISSN 2086-1036.","Thailand":"World Bank (2012). Reducing Poverty of Older People in Thailand.…","Singapore":"Gallup","Malaysia":"Department of Statistics Malaysia (DOSM), Household Income & Expenditure Survey (HIES)"},"years":{"Vietnam":"2022","Indonesia":"2025","Thailand":"2010","Singapore":"12% (2019)\n\n\n\n22%\n(Y","Malaysia":"HIES 2024 mircro"}},{"code":"2.2","name":"Relative Poverty Rate (Older Persons) -> -> recheck questions","def":"The percentage of older persons living in households with income (or consumption) below 50% of the median household income (adjusted for household size). This is a standard measure of relative poverty or income inequality – essentially identifying those who…","values":{"Vietnam":"Yes","Thailand":"0.386","Singapore":"NA","Malaysia":"0.163","Japan":"0.2"},"sources":{"Vietnam":"VHLSS","Indonesia":"BPS, Statistics of Aging Population 2025, Vol. 22, 2025, Catalogue no. 4104001, ISSN 2086-1036.","Thailand":"Natthani Meemon, Ning J. Zhang, Thomas T. H. Wan, & Seung Chun Paek (2022). Income Inequality in Thailand: A Relative Poverty Approach.…","Malaysia":"DOSM, HIES","Japan":"Abe, A (2026) based on Comprehensive Survey of Living Conditions 2022"},"years":{"Vietnam":"2022/2024","Indonesia":"2025","Thailand":"2017","Singapore":"?","Malaysia":"2024","Japan":"2021"}},{"code":"2.3","name":"Financial Tools (Access to Financial Services)","def":"The proportion of older persons who have an account at a bank or other formal financial institution, or a mobile money service in their own name. In short, this measures financial inclusion of older adults. It aligns with the standard definition used in the…","values":{"Vietnam":"90","Indonesia":"0.3498","Thailand":"0.497","Singapore":"0.98","Malaysia":"98% of adults have access to formal financial services"},"sources":{"Vietnam":"https://ansinh.tapchikinhtetaichinh.vn/ca-nuoc-co-khoang-90-nguoi-huong-nhan-tien-qua-tai-khoan-ca-nhan-161571.html","Indonesia":"BPS, Statistics of Aging Population 2025, Vol. 22, 2025, Catalogue no. 4104001, ISSN 2086-1036.","Thailand":"NSO: The Survey of Household Behaviors (Biannually)","Singapore":"MAS","Malaysia":"Bank Negara Malaysia (BNM); Financial Capability & Inclusion Demand Side Survey (FCI)"},"years":{"Vietnam":"2026","Indonesia":"2025","Thailand":"2024","Singapore":"0.68","Malaysia":"2024"}},{"code":"2.4","name":"Food Insecurity (Older Persons) -> may rethink the indicator?","def":"The prevalence of moderate or severe food insecurity among older persons, typically measured via the Food Insecurity Experience Scale (FIES) or a similar instrument. This corresponds to SDG indicator 2.1.2 (prevalence of moderate or severe food insecurity in…","values":{"Vietnam":"No","Thailand":"A moderate risk of food insecurity amongst participants (aged 60+) in the urban areas of two provinces of Thailand (Greater Bangkok Metropolitan Region).","Singapore":"7%\n \n \n \n \n 50%","Japan":"0.0241"},"sources":{"Indonesia":"- SUSENAS - Prevalence of Moderate or Severe Food Insecurity in the Population, Based on the Food Insecurity Experience Scale (FIES)…","Thailand":"Harnirattisai, T.; Vuthiarpa, S.; Pawloski, L.R.; Curtin, K.M.; Blackwell, E.; Nguyen, J.; Bourgeois, S.M. Nutritional Health Risk (Food…","Singapore":"Gallup (2019) National Nutrition Survey (2022","Malaysia":"National Health and Morbidity Survey (NHMS) 2024/2025","Japan":"2022 The National Survey on Social Security and People’s Life, IPSS"},"years":{"Indonesia":"2024","Thailand":"2024","Singapore":"7%\n\n\n\n50%","Malaysia":"2024","Japan":"2022"}},{"code":"2.5","name":"Employment of Older Persons","def":"The labor force participation rate of older persons, usually defined for a specific age group such as 55–64 years (which captures the tail end of working life) or alternatively 60+ if wanting to include beyond retirement age. This is the proportion of that…","values":{"Vietnam":"41.2","Indonesia":"0.5421","Thailand":"0.3399","Singapore":"70.97% (2019)\n \n \n \n 30.6% (Yr 2023) \n \n 31.7% (Yr 2024)","Malaysia":"0.249","Japan":"0.3435"},"sources":{"Vietnam":"VNAS","Indonesia":"BPS, Statistics of Aging Population 2025, Vol. 22, 2025, Catalogue no. 4104001, ISSN 2086-1036.","Thailand":"NSO; The 2024 Survey of the Older Persons in Thailand (Table 14)","Singapore":"ILO MOM Labour Force","Malaysia":"Labour Force Survey (LFS) 2024; HIES 2024","Japan":"2020 Census, Statistics Bureau"},"years":{"Indonesia":"2025","Thailand":"2024","Singapore":"70.97%\n(2019)\n\n\n30.6","Malaysia":"2024","Japan":"2020"}},{"code":"2.6","name":"Coverage of Income Security Measures – Public Pension","def":"The proportion of older persons (above the country’s statutory pensionable age, or a fixed age like 60 or 65) who are receiving a public pension or contributory retirement benefit. This includes any contributory old-age social insurance (like employment-based…","values":{"Vietnam":"2.5 million receiving retirement benefits (out of the total 16.1 million OP in 2025)","Indonesia":"Data per Q1, 2026\nJKP: 214 participants (0.001%)\nJKK: 1,670,077 participants (3.52%)\nJKM: 1,670,077 participants (3.52%)\nJHT: 245,444 participants (1.22%)\nJP: 6,277 participants (0.04%)\"","Thailand":"0.0727","Singapore":"48.9% (2018)\n \n \n \n 70% (2023)","Japan":"0.944"},"sources":{"Vietnam":"https://vnexpress.net/73-nguoi-cao-tuoi-khong-luong-huu-tro-cap-bao-hiem-4881622.html","Indonesia":"Presentation Material from BPJS Employment for ACAI Phase 2 Site Visit: PROFIL KEPESERTAAN KELANJUTUSIAAN BPJS KETENAGAKERJAAN JAKARTA, 18…","Thailand":"NSO; The 2024 Survey of the Older Persons in Thailand (Table 19)","Singapore":"SDG CPF","Malaysia":"EPF, SOCSO, Public Service Department (PSD), Department of Social Welfare (JKM)","Japan":"2022 Comprehensive Survey of Living Conditions, Household Questionnaire, MHLW"},"years":{"Vietnam":"2025","Indonesia":"2024","Thailand":"2024","Singapore":"48.9%\n(2018)\n\n\n\n70%","Malaysia":"2023","Japan":"2022"}},{"code":"2.7","name":"Coverage of Income Security Measures – Welfare Benefits (Social Assistance)","def":"The proportion of older persons covered by non-contributory social assistance or welfare benefits targeted at the elderly. This means older people receiving social pensions or old-age allowances (cash transfers that do not require prior contributions) or…","values":{"Vietnam":"2.06 million receiving social assistance (out of the total 16.1 million OP in 2025)","Indonesia":"- 16.19% - PKH (monetary) Recipient\n- 22.74% - Staple Food Recipient\n- 80.78% - National Health Insurance Recipient","Thailand":"0.8786","Singapore":"290,000 (33.5%) seniors aged 65+","Japan":"0.0277"},"sources":{"Vietnam":"https://vnexpress.net/73-nguoi-cao-tuoi-khong-luong-huu-tro-cap-bao-hiem-4881622.html","Indonesia":"BPS, Statistics of Aging Population 2025, Vol. 22, 2025, Catalogue no. 4104001, ISSN 2086-1036.","Thailand":"NSO; The 2024 Survey of the Older Persons in Thailand (Table 19)","Singapore":"Minister Manpower Speech (13 Jan 2026)","Malaysia":"Department of Social Welfare (JKM)","Japan":"2024 National Survey on Public Assistance Recipients, MHLW"},"years":{"Vietnam":"2025","Indonesia":"2025","Thailand":"2024","Singapore":"0.335","Malaysia":"2023","Japan":"2024"}},{"code":"2.8","name":"Home Ownership (Older Persons)","def":"The proportion of older persons (or households with older person(s)) who own their place of residence (home ownership rate among the elderly). In many cases, this can be measured as the percentage of older-person-headed households that are owner-occupied. It…","values":{"Vietnam":"86.94","Indonesia":"0.9315","Thailand":"0.7499","Singapore":"80% own their flat. Breakdown by age not in public domain","Japan":"0.84"},"sources":{"Vietnam":"VNAS","Indonesia":"BPS, Statistics of Aging Population 2025, Vol. 22, 2025, Catalogue no. 4104001, ISSN 2086-1036.","Thailand":"NSO; The 2024 Survey of the Older Persons in Thailand (Table 24)","Singapore":"HDB","Malaysia":"DOSM Population & Housing Census","Japan":"2020 Census, Statistics Bureau"},"years":{"Vietnam":"2022","Indonesia":"2025","Thailand":"2024","Singapore":"80% ownership","Malaysia":"2024","Japan":"2020"}},{"code":"2.9","name":"Share of Consumption Funded by Labor Income (60+)","def":"The proportion of older persons’ consumption that is covered by their own labor income. In other words, out of all the goods and services consumed by people aged 60+ (in monetary value), what percentage is financed by earnings from work (wages or…","values":{"Vietnam":"41.1","Thailand":"Consumption (60+)= 153,777 Baht/person, Labor income (60+) = 43,354 Baht/person; Defecit = 110,423 Baht/person. Labor income share in consumption (60+) = 43,354/153,777 = 0.2819","Singapore":"$2032 (Yr 2017/8) \n \n $2349 (Yr 2023)","Japan":"0.27"},"sources":{"Vietnam":"VNAS 2022","Thailand":"UNFPA and NESDC: National Transfer Account 2021","Singapore":"Singstat Household Expenditure Survey 2023","Malaysia":"HIES 2024; National Transfer Accounts (NTA)","Japan":"NTA 2019, IPSS"},"years":{"Vietnam":"2022","Thailand":"2019","Singapore":"$2032 (Yr 2017/8)","Malaysia":"2024","Japan":"2019"}},{"code":"2.0","name":"Ratio of Labor Income of Older Persons to that of Prime-Age Adults","def":"The ratio of the average labor income of individuals aged 60+ to the average labor income of individuals aged 30–49. In formula form: (labor income per capita at 60+ / labor income per capita at 30–49). This comes from NTA methodology, where labor income by…","values":{"Vietnam":"Yes","Thailand":"Labor income (60+) = 43,354 Baht/person, Labor income ( 25 - 59) = 179,354 Baht/person; Ratio Lablor income (60+)/Labor income (25-59) = 0.2416 (or 24.16%)","Singapore":"Ratio of 0.55 \n (Yr 2024)","Japan":"#N/A"},"sources":{"Thailand":"UNFPA and NESDC: National Transfer Account 2021","Singapore":"MOM","Malaysia":"HIES 2024; LFS 2024","Japan":"#N/A"},"years":{"Vietnam":"2022","Thailand":"2019","Singapore":"Ratio of 0.55 \n(Yr 2","Malaysia":"2024","Japan":"#N/A"}},{"code":"2.11","name":"Proportion of Public Health Expenditure in Total Health Expenditure of 60+","def":"The share of older persons’ total health care consumption that is financed by public expenditure. In NTA terms, it’s the fraction of medical spending on 60+ that comes from government programs (like Medicare-type or national health insurance) as opposed to…","values":{"Vietnam":"checking","Thailand":"Health expendiutre consumed by older persons (60+) = 23,797 Baht/person, total public expenditures provided for OP(60+) = 45,816 Baht/person; the percentage covered by public sources = 51.94%.","Japan":"0.81"},"sources":{"Thailand":"UNFPA and NESDC: National Transfer Account 2021","Malaysia":"Malaysia National Health Accounts (MNHA); National Transfer Accounts (NTA)","Japan":"NTA 2019, IPSS"},"years":{"Thailand":"2019","Malaysia":"2023","Japan":"2019"}},{"code":"2.12","name":"Proportion of Consumption of 60+ from Public and Private Transfers","def":"The share of older persons’ total consumption that is financed by transfers, both public (e.g., pensions, health subsidies) and private (e.g., family support), as opposed to being financed by their own labor or asset income. In other words, what portion of…","values":{"Vietnam":"19.5","Thailand":"Totol transfers (both public and private) to OP(60+) = 1,924.1 B. Baht, total transfers to all age group (Public+Private) = 10,001.5 B. Baht; the share = 19.24%.","Singapore":"9.3% \n (Yr 2023)","Japan":"0.29"},"sources":{"Vietnam":"VNAS 2022","Thailand":"UNFPA and NESDC: National Transfer Account 2021","Singapore":"Singstat Household Expenditure Survey 2023","Malaysia":"HIES 2024; National Transfer Accounts","Japan":"NTA 2019, IPSS"},"years":{"Thailand":"2019","Singapore":"9.3% \n(Yr 2023)","Malaysia":"2024","Japan":"2019"}},{"code":"2.13","name":"Public Transfer Inflows to 60+ as % of GDP per Capita","def":"The average annual public transfer inflow per older person, expressed as a percentage of GDP per capita. Public transfer inflow means the net benefits each older person receives from the government (pensions, health subsidies, etc.). So this indicator…","values":{"Vietnam":"0.4","Thailand":"Public inflows (both in-kind + cash) to OP(60+) = 794.4 B. Baht, Total Public inflows (both in-kind + cash) = 3,869.7 B.Baht; Public transfer as % of GDP per capita = 20.53%","Singapore":"10.1% (Yr 2024) to 10.3% (Yr 2025)","Japan":"0.1932"},"sources":{"Thailand":"UNFPA and NESDC: National Transfer Account 2021","Singapore":"CEIC Data","Malaysia":"HIES 2024; National Accounts; DOSM GDP Statistics","Japan":"NTA 2019, IPSS"},"years":{"Vietnam":"2025","Thailand":"2019","Singapore":"10.1% (Yr 2024) to 1","Malaysia":"2024","Japan":"2019"}}]},{"name":"3. Health & Well-being","desc":"include indicators on longevity, physical and mental health, disability, and access to care.","indicators":[{"code":"3.1","name":"Life Expectancy at Age 60","def":"The average number of additional years a person aged 60 can expect to live, given prevailing age-specific mortality rates. This is basically the life expectancy for someone at the 60th birthday. It is usually calculated separately for males and females, as…","values":{"Vietnam":"23.6","Indonesia":"15.4","Thailand":"Both sex = 22 years; M = 20.0; F = 23.7","Singapore":"26.0 years","Malaysia":"Males 18.6 years\nFemales 21.4 years","Japan":"26.34"},"sources":{"Vietnam":"World Bank database 2023 : https://genderdata.worldbank.org/en/indicator/sp-dyn-le60-in","Indonesia":"WHO Global Health Observatory, 2021. 15.4 years","Thailand":"From IHPP websitehttps://le-hale.bodthai.net/","Singapore":"WHO GHO","Malaysia":"Department of Statistics Malaysia (DOSM), Current Population Estimates & Life Tables","Japan":"Japanese Mortality Database 2024, IPSS"},"years":{"Vietnam":"2024","Indonesia":"2021","Thailand":"2024/2025","Singapore":"2023"}},{"code":"3.2","name":"Healthy Life Expectancy at Age 60","def":"The average number of healthy years a person aged 60 can expect to live. “Healthy” here means years lived in full health (accounting for mortality and morbidity), often referred to as Health-Adjusted Life Expectancy (HALE) at 60. It subtracts years likely…","values":{"Vietnam":"16.7","Indonesia":"11.9","Thailand":"Both sex = 15.9 years; M = 15.0; F = 15.9","Singapore":"20.3 years","Japan":"20.36"},"sources":{"Vietnam":"UNESCAP 2022 https://www.unescap.org/sites/default/files/SDD%20Ageing%20Fact%20Sheet%20Overview.pdf","Indonesia":"WHO Global Health Observatory, 2021. 11.9 years","Thailand":"From IHPP websitehttps://le-hale.bodthai.net/","Singapore":"WHO GHO","Malaysia":"WHO Global Health Observatory / Institute for Health Metrics and Evaluation (IHME)","Japan":"WHO Global Health Observatory"},"years":{"Vietnam":"2022","Indonesia":"2021","Thailand":"2024/2025","Japan":"2021"}},{"code":"3.3","name":"NCD Mortality (Premature mortality from NCDs)","def":"The probability (as a percentage) that a person will die between ages 30 and 70 from any of the four major non-communicable diseases (NCDs: cardiovascular diseases, cancers, diabetes, or chronic respiratory diseases). This is the standard SDG indicator 3.4.1…","values":{"Vietnam":"20.1","Indonesia":"21.9","Thailand":"74% of all deaths in the country. A 14% risk of dying prematurely (before the age of 70) from one of the four main NCDs (cardiovascular disease (CVD), diabetes, chronic respiratory disease, and cancer)","Malaysia":"0.154","Japan":"8"},"sources":{"Vietnam":"WHO 2021","Indonesia":"UN SDGs 3.4.1, 2021. 21.9 %","Thailand":"Prevention and Control of Noncommunicable Diseases in Thailand – The Case for Investment. 23 November 2021.…","Singapore":"UN SDGs","Malaysia":"Ministry of Health Malaysia; WHO NCD Country Profile","Japan":"WHO Global Health Observatory"},"years":{"Indonesia":"2021","Thailand":"2024/2025","Japan":"2021"}},{"code":"3.4","name":"Suicide Mortality Rate among Older People","def":"The annual age-specific suicide death rate for older persons (usually expressed per 100,000 population age 60+ per year). It measures how common suicide is in the older demographic. If data allows, it could be broken by sex since rates often differ (male…","values":{"Vietnam":"Requesting data from NSO Vietnam","Indonesia":"3.9\n\nMale and Female, 70+: 6.4 ; 60-69: 2.4\nMale, 70+: 7.8 ; 60-69: 5.4\nFemale, 70+: 5.4 ; 60-69: 1.8","Thailand":"7.9 per 100,000 (5,172 people died by suicide)","Singapore":"31.3 per 100,000","Japan":"16.82"},"sources":{"Vietnam":"VNAS 2022","Indonesia":"WHO GHE","Thailand":"Report of suicide Situation in Thailand in 2023. Suicide Prevention Center, Khon Kaen Rajanagarindra Psychiatric Hospital, Department of…","Singapore":"http://www.smj.org.sg/article/suicide-risk-assessment-elderly-individuals )","Japan":"Vital Statistics, MHLW"},"years":{"Indonesia":"2021","Japan":"2024"}},{"code":"3.5","name":"Depressive Symptom Prevalence (in Older Persons)","def":"The proportion of older persons with significant depressive symptoms, as measured by a validated screening tool (e.g. Geriatric Depression Scale (GDS-15), PHQ-9, K6, or similar). It is not necessarily formally diagnosed depression, but a positive screening…","values":{"Vietnam":"21.2","Thailand":"0.9% of 960,000 persons); / 2. 60 = 69 = 2.4%; 70 - 79= 2.6%; 80+ = 1.5%. Males = (2019-2020 Thai NHES)// 2.","Singapore":"11.9%\n \n 4.4%","Japan":"23.77"},"sources":{"Indonesia":"ASIK CKG (Survey based, not periodical formal data)","Thailand":"Prevalence of Mood Disorders: The 2023 National Epidemiology Survey on Mental Health in Thailand, Mental Health Data Center, Department of…","Singapore":"Mental health survey: GMS-AGECAT for depression","Japan":"Comprehensive Survey of Living Conditions, Health Questionnaire, MHLW"},"years":{"Vietnam":"2022","Indonesia":"2024","Thailand":"2023","Singapore":"2022","Malaysia":"2025","Japan":"2022"}},{"code":"3.6","name":"Disability Prevalence (Washington Group/ADL)","def":"The percentage of older persons with a disability, typically defined by having significant difficulties in one or more basic domains of functioning. The standard approach is using the Washington Group Short Set (WG-SS): asking about difficulty seeing,…","values":{"Vietnam":"% had difficulty in hearing: 28.3%\n % had difficulty in seeing: 71%","Indonesia":"Figure 4.10 Overview of type 1 disabilities in the population aged 60 years and over, 2022. Type 1 (Type 1 disability means that at least one of the questions is coded as “some difficulty,” “a lot of difficulty,” or “cannot do at all.”): \n- Difficulty in walking or climbing: 17.72%\n- Difficulty in seeing: 17.56%\n- Difficulty in listening (hearing): 12.28%\n- Difficulty in remembering or concentrating: 9.34%\n- Difficulty in fingers/hands: 6.68%\n- Difficulty to understand or be understood by others when speaking: 5.92%\n- Difficulty in taking care of own self: 5.31%\n- Difficulty in thinking/learning: 4.09%\n- Difficulty in interpersonal interactions: 2.42%\n\nFigure 4.9 Overview of type 3 disabilities in the population aged 60 years and over. Type 3 (Type 3 disability is defined as at least one of the questions coded as \"a lot of difficulty\" or \"can't do it at all.\" This is the recommended measure for use with the WG-SS internationally and is therefore the most commonly used measure):\n- Difficulty in walking or climbing: 3.78%\n- Difficulty in seeing: 1.99%\n- Difficulty in listening (hearing): 1.70%\n- Difficulty in taking care of own self: 1.53%\n- Difficulty in remembering or concentrating: 1.36%\n- Difficulty in fingers/hands: 1.35%\n- Difficulty to understand or be understood by others when speaking: 0.92%\n- Difficulty in thinking/learning: 0.76%\n- Difficulty in interpersonal interactions: 0.37%","Thailand":"Total (60+) = 20.07% (M = 17.38%, F = 22.03%)","Singapore":"ADL having difficulty with each tasks on -bathing (4.2%), \n -mobility (4.2%), -dressing (3.9%), -toileting (3.2%), and -transferring (3.0%), -feeding (2.2%).\n \n IADL having difficulty with:\n manage finances (5.9%), manage meds (3.9%), using telephone (3.2%), shopping (3.0%), \n meal preparation (3%), transportation (1%).","Japan":"18.62"},"sources":{"Vietnam":"VNAS 2022","Indonesia":"BPS, Portrait of Persons with Disabilities in Indonesia: Long Form PC2020 Results, Catalogue no. 2102059, Published 2024.","Thailand":"NSO, The Disability Survey 2022","Singapore":"RHS","Japan":"Comprehensive Survey of Living Conditions, Health Questionnaire, MHLW"},"years":{"Vietnam":"2024","Indonesia":"2024","Thailand":"2022","Singapore":"2018","Malaysia":"2020","Japan":"2022"}},{"code":"3.7","name":"Prevalence of Dementia/Cognitive Impairment","def":"The proportion of older persons who have dementia or significant cognitive impairment. Dementia prevalence can be defined clinically (meeting diagnostic criteria like DSM-IV or ICD-10 for dementia) or by research definitions (like the 10/66 algorithm often…","values":{"Vietnam":"73","Indonesia":"0.009","Thailand":"2021 = 2,138 persons; 2022 = 82,655 persons; 2023 = 213.022 persons.","Singapore":"0.088","Japan":"2.74"},"sources":{"Vietnam":"VNAS 2022","Indonesia":"ADB, Indonesia Longitudinal Aging Survey 2023 (ILAS 2023).","Thailand":"Department of Older Persons. (2024). Situation of the Thai Older Persons 2023. Bangkok: Department of Older Persons, Ministry of Social…","Singapore":"IMH","Malaysia":"National Health and Morbidity Survey (NHMS)","Japan":"Patient survey, MHLW"},"years":{"Indonesia":"2024","Thailand":"2023","Singapore":"2022","Malaysia":"2025","Japan":"2023"}},{"code":"3.8","name":"Subjective Self-Rated Health (Positive Perception)","def":"The proportion of older persons who rate their own health status as good or very good (or an equivalent positive category). Self-rated health is typically measured by asking “How is your health in general?” with options from very good to very bad. For…","values":{"Vietnam":"10.9","Indonesia":"Age 60-64 years: Very good 4.3% ; Good 45.2% ; Moderate 38.1% ; Poor 10.9% ; Very Poor 1.5%\nAge 65-69 years: Very good 2.4% ; Good 39.5% ; Moderate 38.3% ; Poor 18.8% ; Very Poor 1.0%\nAge 70-74 years: Very good 2.2% ; Good 37.0% ; Moderate 41.2% ; Poor 17.3% ; Very Poor 2.2%\nAge 75-79 years: Very good 2.0% ; Good 48.3% ; Moderate 31.0% ; Poor 13.8% ; Very Poor 4.9%\nAge 80+ years: Very good 1.3% ; Good 42.2% ; Moderate 33.7% ; Poor 21.4% ; Very Poor 1.4%","Thailand":"0.8062","Singapore":"0.47","Japan":"28.67"},"sources":{"Vietnam":"VNAS 2022","Indonesia":"ADB, Indonesia Longitudinal Aging Survey 2023 (ILAS 2023).","Thailand":"HART","Singapore":"NHSS","Malaysia":"National Health and Morbidity Survey (NHMS)","Japan":"Comprehensive Survey of Living Conditions, Health Questionnaire, MHLW"},"years":{"Vietnam":"2022","Indonesia":"2024","Singapore":"2001\nNHSS","Malaysia":"2025","Japan":"2025"}},{"code":"3.9","name":"Unmet Need for Long-Term Care","def":"The proportion of older persons who need assistance with activities of daily living (ADLs) or similar long-term care but are not receiving adequate help. In other words, they have functional limitations requiring care, yet those needs are not met by formal or…","values":{"Vietnam":"4.8","Indonesia":"- Older people in need of long term care, without a caregiver: 2.7%","Thailand":"In total, M = 4.4%, F = 5.5%. By age group: 60 - 69 = 3.5% M, = 5.1% F; 70 - 79 = 5.2% M, = 6.6% F; 80+ = 7.7% M, = 4.7% F.","Malaysia":"No national data","Japan":"TBC"},"sources":{"Vietnam":"VNAS 2022: 0.5 for type i) and 4.3 for type ii)","Indonesia":"ADB, Indonesia Longitudinal Aging Survey 2023 (ILAS 2023).","Thailand":"Faculty of Medicine Ramathibodi Hospital, Mahidol University (Thailand). Thailand National Health and Examination Survey 2019-2020.…","Japan":"Comprehensive Survey of Living Conditions, Household Questionnaire, MHLW"},"years":{"Vietnam":"2022","Indonesia":"2024","Japan":"2025"}},{"code":"3.0","name":"Unmet Need for Healthcare","def":"The percentage of older persons who needed medical care (outpatient or inpatient) in the last 12 months but did not receive it (or delayed/only partially received). Common reasons might be cost, distance, or availability issues. This is a standard indicator…","values":{"Vietnam":"#N/A","Indonesia":"0.033","Thailand":"0.5% of households have no health securities","Japan":"#N/A"},"sources":{"Vietnam":"#N/A","Indonesia":"BPS, Statistics of Aging Population 2025, Vol. 22, 2025, Catalogue no. 4104001, ISSN 2086-1036. \"","Thailand":"The 2023 Health and Welfare Survey by NSO.","Malaysia":"National Health and Morbidity Survey (NHMS)","Japan":"#N/A"},"years":{"Vietnam":"#N/A","Indonesia":"2025","Japan":"#N/A"}},{"code":"3.11","name":"Physical Exercise (Including Walking)","def":"The proportion of older persons who engage in regular physical exercise, including moderate activities like brisk walking. “Regular” could be defined as meeting a recommended level (e.g., 150 minutes of moderate activity per week) or a simpler measure like…","values":{"Indonesia":"- 60-64 years: Enough physical activity 61.6% ; Not enough physical activity 38.4%\n- 65+ years: Enough physical activity 47.2% ; Not enough physical activity 52.8%","Thailand":"0.379","Singapore":"0.742","Japan":"45.62"},"sources":{"Indonesia":"MoH, Indonesia Health Survey 2023 (SKI)","Thailand":"NSO 2024. The 2024 Survey of The Older Persons in Thailand","Singapore":"https://isomer-user-content.by.gov.sg/3/d93ac4ca-205c-4afc-85de-cb8eccf02923/nphs-2023-report.pdf","Malaysia":"National Health and Morbidity Survey (NHMS)","Japan":"Comprehensive Survey of Living Conditions, Health Questionnaire, MHLW"},"years":{"Vietnam":"2022","Indonesia":"2024","Singapore":"2023","Japan":"2025"}},{"code":"3.12","name":"Access to Holistic/Traditional Medicine (AYUSH/TCIM)","def":"An indicator of how well Traditional, Complementary and Integrative Medicine (TCIM) is integrated and accessible for older persons. Examples of measures could include: whether public health facilities offer TCIM services beneficial to older people, or number…","values":{"Vietnam":"1.17","Indonesia":"- Table 10. 20 Proportion of Traditional Health Efforts Utilization by Characteristic, 2023 SKI (P378, or PDF416)\n55-64 years: 45.5% utilize traditional health\n65-74 years: 42.9% utilize traditional health\n75+ years: 39.4% utilize traditional health\n\n- Table 10. 22 Proportion of Personnel Types Used to Handle Traditional Health by Characteristic, 2023 SKI (P382, or PDF420)\nHealth workers or Nakestrad in hospitals, health centers, clinics (%): 55-64 years: 1.8% ; 65-74 years: 1.7% ; 75+ years: 2.0% \nIndependent Practice of Health Personnel (%): 55-64 years: 1.7% ; 65-74 years: 1.4% ; 75+ years: 1.3%\nNakestrad in Griya Sehat (%): 55-64 years: 3.4% ; 65-74 years: 2.8% ; 75+ years: 2.3%\nTraditional Healers (%): 55-64 years: 48.3% ; 65-74 years: 47.0% ; 75+ years: 45.0%\nSelf-Effort (%): 55-64 years: 64.6% ; 65-74 years: 65.6% ; 75+ years: 67.8%","Thailand":"(1) Percentage of patients who were diagnosed of having brain vascular disease and being treated by traditional Tahi and alternative medicines at the Health Districts in 2024 = 15.72%. (2) Percentage of people accessed primary care at local health care hospitals for traditional Thai and alternative medicines = 43.50%","Singapore":"0.4","Japan":"7.53"},"sources":{"Vietnam":"VNAS","Indonesia":"MoH, Indonesia Health Survey 2023 (SKI)","Thailand":"Dept of Thai Traditional and Alternative Medicine -DTAM, MoPH, (2025).Thailand Health Profile: Traditional and Alternative Medicines…","Singapore":"MOH","Malaysia":"National Health and Morbidity Survey (NHMS) 2015;…","Japan":"Comprehensive Survey of Living Conditions, Health Questionnaire, MHLW"},"years":{"Indonesia":"2024","Singapore":"2023","Japan":"2025"}},{"code":"3.13","name":"Health Screening for Older Persons (Annual)","def":"The proportion of older persons who have received a comprehensive health screening in the past year, according to either national guidelines or a basic recommended bundle. The basic screening bundle typically includes at least blood pressure, blood…","values":{"Vietnam":"TBC","Indonesia":"- Table 11. 108 Proportion of Who Have Blood Pressure Examination in Population Aged ≥15 by Characteristic, 2023 SKI (P513, or PDF551)\n60-64 years: Minimum once per year: 7.5%\n65+ years: Minimum once per year: 6.5% \n\n- Table 11. 110 Proportion of Health Examination of Measuring/Monitoring Blood Pressure in Population Aged ≥15 Who Do Not Have Hypertension by Characteristic, 2023 SKI (P515, or PDF553)\n60-64 years: Minimum once per year: 56.9%\n65+ years: Minimum once per year: 55.8%\n\n- Table 11. 112 Proportion of Health Examination of Body Weight in the Population Aged ≥ 15 by Characteristic, 2023 SKI (P517, PDF555)\n60-64 years: Minimum once per year: 53.4%\n65+ years: Minimum once per year: 51.7%\n \n- Table 11. 114 Proportion of Health Examination of Measuring Height in the Population Aged ≥15 by Characteristic, 2023 SKI (P519, or PDF557)\n60-64 years: Minimum once per year: 31.4%\n65+ years: Minimum once per year: 31.0%\n\n- Table 11. 116 Proportion of Health Examination of Measuring Waistline in the Population Aged ≥15 by Characteristic, 2023 SKI (P521, or PDF559)\n60-64 years: Minimum once per year: 18.6%\n65+ years: Minimum once per year: 18.7%  \n\n- Table 11. 118 Proportion of Health Examination of Checking Total Cholesterol Level in Population Aged ≥15 by Characteristic, 2023 SKI (P523, or PDF561)\n60-64 years: Minimum once per year: 35.0%\n65+ years: Minimum once per year: 34.4%\n  \n- Table 11. 120 Proportion of Measuring Blood Glucose in Population aged ≥15 Years by Characteristic, 2023 SKI (P525, or PDF563)\n60-64 years: Minimum once per year: 6.3%\n65+ years: Minimum once per year: 5.4%\n\n- Table 11. 122 Proportion of Health Examination of Measuring Blood Sugar in Non-Diabetic Population Aged ≥15 by Characteristic, 2023 SKI (P527, or PDF565)\n60-64 years: Minimum once per year: 33.4%\n65+ years: Minimum once per year: 33.3%\n  \n- Table 11. 124 Proportion of Cervical Cancer Screening Health Examination (Pap smear/IVA Test) in Women* ≥15 by Characteristic, 2023 SKI (P529, or PDF567)\n60-64 years: Minimum once per year: 3.0%\n65+ years: Minimum once per year: 2.8%\n \n- Table 11. 126 Proportion of Breast Examination Health Examination (SADARI/SADANIS) in Women Aged ≥15 by Province, 2023 SKI (P531, or PDF569)\n60-64 years: Minimum once per year: 0.5%\n65+ years: Minimum once per year: 0.3%","Thailand":"The overall prevalence of annual health check up (AHC) utilization was 53.3 %, which decreased from 52.6 % in 2015 to 42.1 % in 2022 (p < 0.001).","Singapore":"DHL screening: \n 65.1% (60-69) \n 76.9% (70-74)\n \n BrCA screening:\n F: 31.0% (60-69)\n \n Cervical Screening:\n F: 34.5% (60-69)\n \n CRC screening: \n 49.7% (60-69)","Japan":"67.49"},"sources":{"Indonesia":"MoH, Indonesia Health Survey 2023 (SKI)","Thailand":"\"Correlates of annual health check-up among community-dwelling persons 60 years and older: Longitudinal national evidence from the health,…","Singapore":"MOH","Japan":"Comprehensive Survey of Living Conditions, Health Questionnaire, MHLW"},"years":{"Indonesia":"2024","Singapore":"2024","Malaysia":"2017","Japan":"2025"}},{"code":"3.14","name":"Institutional Long-Term Care (LTC) Coverage Rate","def":"The proportion of older persons who are living in institutional long-term care facilities or receiving publicly financed institutional care services. In simpler terms, what percent of seniors are in nursing homes or similar. If “receiving publicly financed…","values":{"Vietnam":"NA","Singapore":"2025\n Number of NH beds: 21,002 \n (occupancy rate: 90%)\n \n Number of Inpatient Hospice Palliative beds: 327","Japan":"5.33"},"sources":{"Singapore":"MOH","Malaysia":"Ministry of Health; Department of Social Welfare (JKM)","Japan":"Census"},"years":{"Singapore":"2025","Japan":"2020"}},{"code":"3.15","name":"Availability of End-of-Life/Palliative Care Services","def":"An indicator of the availability and accessibility of palliative and end-of-life care services for older persons. This could be measured by the presence of specialized palliative care teams, hospices or hospital palliative units, or the coverage of palliative…","values":{"Thailand":"NHSO expanded palliative care to end-stage patients"},"sources":{"Thailand":"Natprayut, N. (2019). Access to palliative care in a tertiary care hospital in Thailand. The Clinical Academia, 43(6), 220–228.…","Malaysia":"Ministry of Health Malaysia"},"years":{}}]},{"name":"4. Social Capital & Participation","desc":"Measures older adults' relationships, community support, safety, and their social engagement (e.g., volunteering).","indicators":[{"code":"4.1","name":"Loneliness/Social Isolation","def":"The proportion of older persons who experience feelings of loneliness. Typically measured by self-report, e.g., percentage of older adults who say they feel lonely “often” or “always” (using a direct question like the 3-point UCLA loneliness scale question).…","values":{"Vietnam":"7.43","Indonesia":"Overall loneliness: 10.6% (P59, or PDF 84). 60-64 years: 11%, 80+ years: 15% (P60, or PDF 85).","Thailand":"11.5","Singapore":"34% among older adult (aged 60+)","Japan":"3.12"},"sources":{"Vietnam":"VNAS 2022","Indonesia":"National Study on the Impact of the Covid-19 Pandemic on the Elderly (Including People with Disabilities) in Indonesia (BKKBN and UNFPA),…","Thailand":"HART 2024","Singapore":"DUKE-NUS study","Japan":"The National Survey on Social Security and People’s Life, IPSS"},"years":{"Vietnam":"2022","Indonesia":"2022","Thailand":"2023","Singapore":"2019","Malaysia":"2024","Japan":"2022"}},{"code":"4.2","name":"Availability of Social Support when Needed","def":"The proportion of older persons who have someone to count on for help when they face problems or are in need. Often phrased as “If you were in trouble (sick or needed help), do you have relatives or friends you can rely on?” If they answer yes, then they have…","values":{"Vietnam":"94.14","Indonesia":"0.743","Thailand":"58.7","Singapore":"More than 80%","Japan":"8.46"},"sources":{"Vietnam":"VNAS 2022","Indonesia":"ADB, Indonesia Longitudinal Aging Survey 2023 (ILAS 2023).","Thailand":"HART 2024","Singapore":"MSF https://www.msf.gov.sg/docs/default-source/research-data/family-trends-report-(updated).pdf?sfvrsn=76f4b241_1","Japan":"The National Survey on Social Security and People’s Life, IPSS"},"years":{"Vietnam":"2022","Indonesia":"2024","Singapore":"2023","Malaysia":"2024","Japan":"2022"}},{"code":"4.3","name":"Communication with Family or Friends (Frequency)","def":"The proportion of older persons who do not have frequent contact (within a given time frame) with family or friends. The AAAI draft phrased it as capturing those who do not communicate with family or friends within a month. So likely the indicator is % of…","values":{"Vietnam":"NA","Indonesia":"Figure 4.46: Frequency of Meetings with Children by Age Group. (P63, or PDF83)\nOverall (from 45 to 80+): 85.1% everyday, 5.3% every week, 3.7% every month, 5.1% every year and 0.9% never had meeting with children.\n80+ years: 91.9% everyday, 1.5% every week, 2.2% every month, 1.4% every year and 3.0% never had meeting with children.\n75-79 years: 92% everyday, 5.2% every week, 0% every month, 2.5% every year and 0.3% never had meeting with children.\n70-74 years: 75.1% everyday, 14.2% every week, 1.8% every month, 6.7% every year and 2.2% never had meeting with children.\n65-69 years: 80.0% everyday, 10.0% every week, 3.4% every month, 5.2% every year and 1.3% never had meeting with children.\n60-64 years: 86.8% everyday, 3.5% every week, 3.5% every month, 5.8% every year and 0.4% never had meeting with children.\n\n- Figure 4.48: Frequency of Interactions with Children in Person or Virtually by Age Group. (P64, or PDF84)\nOverall (from 45 ro 80+): 88% everyday, 7.6 % every week, 2.6% every month, 1.4% every year and 0.5% never had interaction with children.\n80+ years: 92.9% everyday, 4.1 % every week, 1.9% every month, 0.1% every year and 0.5% never had interaction with children.\n75-79 years: 92.6% everyday, 6.9 % every week, 0% every month, 0.1% every year and 0.4% never had interaction with children.\n70-74 years: 76.8% everyday, 16.2 % every week, 1.9% every month, 3.0% every year and 2.2% never had interaction with children.\n65-69 years: 82.3% everyday, 11.2 % every week, 4.6% every month, 0.9% every year and 1.1% never had interaction with children.\n60-64 years: 90.3% everyday, 5.9 % every week, 2.0% every month, 1.6% every year and 0.2% never had interaction with children.\"","Thailand":"46.7","Japan":"2.87"},"sources":{"Vietnam":"OP&SHI (Survey on Older Persons and Social Health Insurance in Vietnam) - VNAS2 2019","Indonesia":"ADB, Indonesia Longitudinal Aging Survey 2023 (ILAS 2023).","Thailand":"HART 2024","Japan":"The National Survey on Social Security and People’s Life, IPSS"},"years":{"Vietnam":"2022","Indonesia":"2023","Japan":"2022"}},{"code":"4.4","name":"Trust in the Community","def":"The proportion of older persons who express trust in people in their neighborhood/community. Typically measured by agreeing with statements like “Most people in my community can be trusted” or responses to trust questions (like general social trust or…","values":{"Vietnam":"NA","Thailand":"22.9","Singapore":"0.78"},"sources":{"Vietnam":"OP&SHI (Survey on Older Persons and Social Health Insurance in Vietnam) - VNAS2 2019","Thailand":"World Values Survey (WVS)","Singapore":"Gallup, 2018"},"years":{"Vietnam":"2022"}},{"code":"4.5","name":"Safety in the Community (Feel Safe Walking Alone)","def":"The proportion of older persons who feel safe walking alone at night in the area where they live. This is adapted from SDG indicator 16.1.4 (population that feel safe walking alone around area they live). That SDG isn’t age-specific, but here we apply it to…","values":{"Vietnam":"NA","Indonesia":"0.6262","Thailand":"91.47","Singapore":"0.96"},"sources":{"Indonesia":"- BPS, Indonesian Sustainable Development Goals Indicators 2025.","Thailand":"CARS&NIDA poll","Singapore":"Gallup"},"years":{"Indonesia":"2025","Singapore":"2019"}},{"code":"4.6","name":"Care to Children and/or Grandchildren","def":"The proportion of older persons who are providing care to their children or grandchildren, irrespective of living arrangements. This includes things like minding grandchildren, helping adult children with daily tasks or even caregiving if a child is…","values":{"Vietnam":"27.3","Indonesia":"0.46","Thailand":"84.5"},"sources":{"Vietnam":"VNAS 2022","Indonesia":"ADB, Indonesia Longitudinal Aging Survey 2023 (ILAS 2023).","Thailand":"HART 2024"},"years":{"Vietnam":"2022","Indonesia":"2024"}},{"code":"4.7","name":"Engagement in Social Activities (Community, Political, Religious)","def":"The proportion of older persons who are actively participating in social, civic, or religious activities on a regular basis. This could include involvement in community groups, volunteering, attending club meetings, participating in religious gatherings, or…","values":{"Vietnam":"72.7","Indonesia":"0.88","Thailand":"73.97"},"sources":{"Vietnam":"VNAS 2022","Indonesia":"BPS, Statistik Sosial Budaya 2025, Vol 14, 1016. Catalogue no. 4501001, ISSN 2086-4574 (Taken from SUSENAS Sept 2025)","Thailand":"HART 2024"},"years":{"Vietnam":"2022","Indonesia":"2025"}}]},{"name":"5. Enabling Environment","desc":"Addresses physical infrastructure, housing, safety, education, and protections that allow ageing in place.","indicators":[{"code":"5.1","name":"Barrier-Free Public Space Access","def":"An indicator of how accessible public spaces and buildings are for older persons (and people with disabilities). It looks at whether the physical environment has barrier-free features like ramps, smooth sidewalks, elevators in public buildings, tactile…","values":{"Malaysia":"No"},"sources":{"Malaysia":"Ministry of Housing and Local Government (KPKT); Local Authorities; MS 1184 Universal Design standards"},"years":{"Thailand":"2022"}},{"code":"5.2","name":"Public Transport Accessibility","def":"The extent to which public transport vehicles and infrastructure are accessible to older persons (and disabled). This includes having low-floor buses, priority seating, audio-visual announcements, lifts in train stations, etc. Possibly measured by % of public…","values":{"Malaysia":"No"},"sources":{"Indonesia":"MoH, Indonesia Health Profile 2024, Published 2025.","Malaysia":"Ministry of Transport Malaysia; Prasarana Malaysia; APAD"},"years":{}},{"code":"5.3","name":"Living in a House with Safe Drinking Water","def":"The percentage of older persons living in households that use safely managed drinking water (e.g., piped water, protected well, etc., that meets SDG criteria). Essentially same as SDG 6.1.1 (population with safe water) but specifically for older persons or…","values":{"Vietnam":"62.6","Indonesia":"92.64%.","Thailand":"1","Singapore":"1","Malaysia":"0.992","Japan":"98.2"},"sources":{"Vietnam":"VNAS 2022","Indonesia":"MoH, Indonesia Health Profile 2024, Published 2025.","Thailand":"UN Water - Thailand (https://www.sdg6data.org/en)","Singapore":"SDG","Malaysia":"DOSM; Department of Statistics Malaysia Household Income and Basic Amenities Survey (HIS/BA)","Japan":"Water Statistics, Japan Water Works Association"},"years":{"Vietnam":"2022","Indonesia":"2025","Japan":"2024"}},{"code":"5.4","name":"Living in a House with Sanitary Toilet","def":"The percentage of older persons living in households with an improved sanitation facility, specifically a sanitary toilet (flush toilet or a hygienic latrine). Under SDG 6.2.1, improved sanitation includes flush or pour flush to sewer/septic, ventilated pit…","values":{"Vietnam":"92.4","Indonesia":"- 96.04% - Families\n- 83.06% - Households\"","Thailand":"0.9998","Singapore":"1","Malaysia":"0.998","Japan":"93.7"},"sources":{"Vietnam":"VNAS 2022","Indonesia":"MoH, Indonesia Health Profile 2024, Published 2025.","Thailand":"NSO, The 2024 Survey of the Older Persons in Thailand (Statistics - Table 26)","Singapore":"NEA","Malaysia":"DOSM Household Income and Basic Amenities Survey","Japan":"Report of the Ministry of Land, Infrastructure, Transport and Tourism, Ministry of Agriculture, Forestry and Fisheries, and Ministry of the…"},"years":{"Vietnam":"2022","Indonesia":"2025","Japan":"2025"}},{"code":"5.5","name":"Education (completed at least primary)","def":"The proportion of older persons who have completed at least a primary education (or its equivalent). Essentially, literacy/basic education attainment among the elderly. Some contexts might consider \"primary\" as ~6 years of schooling. In many countries, older…","values":{"Vietnam":"64.1","Indonesia":"Number of older persons who finished primary school, 60+: 60.27% (SUSENAS 2025).\n\nNumber of older persons who finished primary school\n60-64 years: 5,735,890 persons\n65-69 years: 3,929,194 persons\n70-74 years: 2,394,349 persons\n75+ years: 2,088,645 persons\n\nNumber of total older person\n60-64 years: 11,061,524 persons\n65-69 years: 8,199,290 persons\n70-74 years: 5,269,667 persons\n75+ years: 5,130,033 persons\n\nIn Percentage\n60-64 years: 51.85% \n65-69 years: 47.92% \n70-74 years: 45.44% \n75+ years: 40.71% \"","Thailand":"0.93","Singapore":"0.7112","Malaysia":"≈85%","Japan":"99.86"},"sources":{"Vietnam":"VNAS 2022","Indonesia":"BPS, Population of Indonesia, The Result of Long Form Population Census 2020, Catalogue no. 2102048","Thailand":"NSO, The 2024 Survey of the Older Persons in Thailand (Statistics - Table 9)","Singapore":"Singstat","Malaysia":"DOSM Population and Housing Census; Labour Force Survey","Japan":"Population Census"},"years":{"Vietnam":"2024","Indonesia":"2023","Japan":"2020"}},{"code":"5.6","name":"Prevalence of Elder Abuse/Neglect/Violence","def":"The proportion of older persons who have experienced any form of abuse, neglect, or violence in a given time period (usually the past 12 months). This can include psychological abuse, physical abuse, sexual abuse, financial exploitation, or neglect by…","values":{"Vietnam":"Any of abuse type: 8.55%; Type 1: 8.2%; Type 2: 1.4%; Type 3: 0.4%","Indonesia":"Overall: 96.1% No violence occurs; \n- 1.4% Neglect/violence occurs and victims receive adequate support; \n- 2.5% Neglect/violence occurs and victims do not receive adequate support.\"","Thailand":"N.A.","Singapore":"0.083","Japan":"0.3"},"sources":{"Vietnam":"VNAS 2022","Indonesia":"ADB, Indonesia Longitudinal Aging Survey 2023 (ILAS 2023).","Thailand":"N.A.","Singapore":"Paper","Malaysia":"Ministry of Women, Family and Community Development (KPWKM); Department of Social Welfare (JKM); academic research","Japan":"5th Survey on crime victim, Ministry of Justice"},"years":{"Vietnam":"2022","Indonesia":"2024","Japan":"2019"}},{"code":"5.7","name":"Average Hours/Week of Unpaid Care Received (Family Care)","def":"The average number of hours per week older persons receive of informal care from family or other informal caregivers. This is a National Time Transfer Account (NTTA) concept: how much time family members spend caring for older individuals, on average. It can…","values":{"Vietnam":"4.56","Indonesia":"- 9.3 hrs/week - Routine caregiver\n- 7.7 hrs/week - Non-routine caregiver\"","Thailand":"N.A.","Malaysia":"No","Japan":"9.5"},"sources":{"Vietnam":"OP&SHI 2019","Indonesia":"ADB, Indonesia Longitudinal Aging Survey 2023 (ILAS 2023).","Thailand":"N.A.","Japan":"NTTA data, IPSS"},"years":{"Vietnam":"2022","Japan":"2021"}},{"code":"5.8","name":"Age at which NTTA Net Consumption Turns Positive (for Women)","def":"In National Time Transfer Accounts (NTTA), there's an age at which a person shifts from being a net provider of care to a net receiver of care (specifically for women, who both give and receive). This indicator would be that threshold age for women where time…","values":{"Vietnam":"NA","Thailand":"N.A.","Malaysia":"No","Japan":"90+"},"sources":{"Thailand":"N.A.","Malaysia":"National Time Transfer Accounts (NTTA)","Japan":"NTTA data, IPSS"},"years":{"Japan":"2021"}},{"code":"5.9","name":"Environmental Risk Exposure (Heat / PM2.5 / Disasters for 60+)","def":"A placeholder indicator grouping environment/climate risks for older persons, such as heat-related excess mortality among 60+ (deaths per 100k due to heat waves), average PM2.5 air pollution exposure of older population, or disaster mortality/affectation rate…","values":{"Vietnam":"NA","Thailand":"139 heat-related deaths, with a male-to-female ratio of 7.2:1. The median age was 53 years, with the age group of 51-60 years and 60 years and older having the highest mortality rates.","Malaysia":"17.59 µg/m³ (Malaysia, 2023)","Japan":"1943"},"sources":{"Thailand":"Sriwannayot N, Suriya S, Prommongkhol J, Wongsanuphat S, Praihirunkit P, Pipatsatitpong D. Surveillance of heat related deaths in Thailand…","Malaysia":"WHO Global Health Observatory – Concentrations of fine particulate matter (PM2.5)","Japan":"Vital Statistics, MHLW"},"years":{"Vietnam":"2024","Japan":"2024"}},{"code":"5.0","name":"Number of Age-Friendly Cities and Communities (AFCC) and Healthy Cities","def":"The count of sub-national jurisdictions (cities, communities, municipalities) in the country that are officially part of the WHO Global Network of Age-Friendly Cities and Communities (GNAFCC) or members of the Alliance for Healthy Cities (AFHC). Essentially,…","values":{"Thailand":"1","Malaysia":"Yes","Japan":"#N/A"},"sources":{"Thailand":"WHO Global Network of Age-Friendly Cities and Communities (GNAFCC). https://extranet.who.int/agefriendlyworld/network/bueng-yitho/. For…","Malaysia":"WHO Global Network for Age-friendly Cities and Communities; Local Authorities","Japan":"#N/A"},"years":{"Japan":"#N/A"}}]},{"name":"6. Digital Inclusion","desc":"Evaluates older persons’ access to and usage of digital tools and services (e.g., phones, internet, telehealth).","indicators":[{"code":"6.1","name":"Having a Mobile/Smart Phone","def":"The proportion of older persons who own or regularly use a mobile phone, especially a smartphone. It could include basic mobile phones, but given the world is moving to smartphones, an emphasis on smartphone ownership is implied. Essentially, how many older…","values":{"Vietnam":"41.34","Indonesia":"- 52.23% - Have ever access to mobile phone.\n- 34.13% - Have ever access to the internet.\n- 1.63% - Have ever access to the computer.","Thailand":"2022 = 82.5%, 2023 = 83.2%, 2024 = 83.0%.","Singapore":"0.8893","Malaysia":"0.798","Japan":"89.79"},"sources":{"Vietnam":"VNAS (code c0903) 2022","Indonesia":"BPS, Statistics of Aging Population 2025, Vol. 21, 2025, Catalogue no. 4104001, ISSN 2086-1036.","Thailand":"NSO, Main Findings from the Availability and Utilization of ICT by Older Persons 2022, 2023, and 2024.","Singapore":"INFOCOMM MEDIA DEVELOPMENT AUTHORITY","Malaysia":"Department of Statistics Malaysia (DOSM), ICT Use and Access by Individuals and Households Survey; MCMC Internet Users Survey","Japan":"2025 Communications Usage Trend Survey, Ministry of Internal Affairs and Communications"},"years":{"Vietnam":"2022","Indonesia":"2025","Thailand":"2022, 2023, 2024","Japan":"2025"}},{"code":"6.2","name":"Access to the Internet","def":"The proportion of older persons who use the internet (either via any device at home or elsewhere). Alternatively phrased as having access to the internet. This generally means either they personally used the internet in the last 3 months (the usual ITU…","values":{"Vietnam":"NA","Indonesia":"- 34.13% - Have ever access to the internet.","Thailand":"2022 = 52.4%, 2023 =58.3%, 2024 = 59.9%.","Singapore":"77.28","Malaysia":"Older persons (60+): ~70%","Japan":"68.22"},"sources":{"Vietnam":"OP&SHI 2019","Indonesia":"BPS, Statistics of Aging Population 2025, Vol. 21, 2025, Catalogue no. 4104001, ISSN 2086-1036.","Thailand":"NSO, Main Findings from the Availability and Utilization of ICT by Older Persons 2022, 2023, and 2024.","Singapore":"INFOCOMM MEDIA DEVELOPMENT AUTHORITY","Malaysia":"DOSM ICT Use and Access Survey; MCMC Internet Users Survey","Japan":"2025 Communications Usage Trend Survey, Ministry of Internal Affairs and Communications"},"years":{"Vietnam":"2022","Indonesia":"2025","Thailand":"2022, 2023, 2024","Malaysia":"2023","Japan":"2025"}},{"code":"6.3","name":"Digital Skills","def":"This likely encompasses several aspects: availability of digital literacy training programs for older persons, use of wearables or digital health devices by older persons, and use of social media or communication apps among older persons. Since these are…","values":{"Vietnam":"43.43","Thailand":"Yes, but no data available","Singapore":"0.66","Malaysia":"Yes, but no national data"},"sources":{"Vietnam":"In VNAS 2022: c0904_entry_4","Thailand":"Digital Economy Promotion Agency (depa)","Singapore":"INFOCOMM MEDIA DEVELOPMENT AUTHORITY"},"years":{}},{"code":"6.4","name":"Access to Telemedicine","def":"indicator whether older persons have access to telemedicine or online platforms for health and social services. This could mean existence of telehealth services targeted at older people (consultations via phone/video), or digital platforms for requesting…","values":{"Vietnam":"44.04","Thailand":"Yes","Singapore":"0.511","Malaysia":"Not available","Japan":"0.2"},"sources":{"Vietnam":"VNAS (code c0904) 2022","Indonesia":"MoH, Indonesia Health Survey 2023 (SKI)","Thailand":"National Health Security Office (NHSO), Private hospitals","Singapore":"Study","Malaysia":"Ministry of Health Malaysia (MOH) Telehealth/Telemedicine initiatives","Japan":"2024 NDB Open Data"},"years":{"Indonesia":"2024","Japan":"2024"}}]}],"demographics":{"A1":{"section":"A. Population Aged 60+","label":"Total population aged 60+","values":{"Vietnam":13419037.0,"Indonesia":31321854.0,"Thailand":15191838.0,"Singapore":1070430.0,"Malaysia":3951897.0,"Japan":44301732.0},"years":{"Vietnam":"2023","Indonesia":"2023","Thailand":"2023","Singapore":"2023","Malaysia":"2023","Japan":"2023"},"sources":{"Vietnam":"UN World Population Prospects 2024 (population.un.org/wpp)","Indonesia":"UN World Population Prospects 2024 (population.un.org/wpp)","Thailand":"UN World Population Prospects 2024 (population.un.org/wpp)","Singapore":"UN World Population Prospects 2024 (population.un.org/wpp)","Malaysia":"UN World Population Prospects 2024 (population.un.org/wpp)","Japan":"UN World Population Prospects 2024 (population.un.org/wpp)"}},"A2":{"section":"A. Population Aged 60+","label":"Population aged 60+ as % of total population","values":{"Vietnam":0.1337,"Indonesia":0.1114,"Thailand":0.2119,"Singapore":0.1849,"Malaysia":0.1125,"Japan":0.3562},"years":{"Vietnam":"2023","Indonesia":"2023","Thailand":"2023","Singapore":"2023","Malaysia":"2023","Japan":"2023"},"sources":{"Vietnam":"UN World Population Prospects 2024 (population.un.org/wpp)","Indonesia":"UN World Population Prospects 2024 (population.un.org/wpp)","Thailand":"UN World Population Prospects 2024 (population.un.org/wpp)","Singapore":"UN World Population Prospects 2024 (population.un.org/wpp)","Malaysia":"UN World Population Prospects 2024 (population.un.org/wpp)","Japan":"UN World Population Prospects 2024 (population.un.org/wpp)"}},"A3":{"section":"A. Population Aged 60+","label":"Population aged 60+ — Female","values":{"Vietnam":7897220.0,"Indonesia":17234817.0,"Thailand":8432698.0,"Singapore":563972.0,"Malaysia":2019783.0,"Japan":24347319.0},"years":{"Vietnam":"2023","Indonesia":"2023","Thailand":"2023","Singapore":"2023","Malaysia":"2023","Japan":"2023"},"sources":{"Vietnam":"UN World Population Prospects 2024 (population.un.org/wpp)","Indonesia":"UN World Population Prospects 2024 (population.un.org/wpp)","Thailand":"UN World Population Prospects 2024 (population.un.org/wpp)","Singapore":"UN World Population Prospects 2024 (population.un.org/wpp)","Malaysia":"UN World Population Prospects 2024 (population.un.org/wpp)","Japan":"UN World Population Prospects 2024 (population.un.org/wpp)"}},"A4":{"section":"A. Population Aged 60+","label":"Population aged 60+ — Male","values":{"Vietnam":5521817.0,"Indonesia":14087037.0,"Thailand":6759140.0,"Singapore":506458.0,"Malaysia":1932114.0,"Japan":19954413.0},"years":{"Vietnam":"2023","Indonesia":"2023","Thailand":"2023","Singapore":"2023","Malaysia":"2023","Japan":"2023"},"sources":{"Vietnam":"UN World Population Prospects 2024 (population.un.org/wpp)","Indonesia":"UN World Population Prospects 2024 (population.un.org/wpp)","Thailand":"UN World Population Prospects 2024 (population.un.org/wpp)","Singapore":"UN World Population Prospects 2024 (population.un.org/wpp)","Malaysia":"UN World Population Prospects 2024 (population.un.org/wpp)","Japan":"UN World Population Prospects 2024 (population.un.org/wpp)"}},"A5":{"section":"A. Population Aged 60+","label":"% of total population - female","values":{"Vietnam":0.1542,"Indonesia":0.1332,"Thailand":0.2294,"Singapore":0.2017,"Malaysia":0.1208,"Japan":0.3824},"years":{"Vietnam":"2023","Indonesia":"2023","Thailand":"2023","Singapore":"2023","Malaysia":"2023","Japan":"2023"},"sources":{"Vietnam":"UN World Population Prospects 2024 (population.un.org/wpp)","Indonesia":"UN World Population Prospects 2024 (population.un.org/wpp)","Thailand":"UN World Population Prospects 2024 (population.un.org/wpp)","Singapore":"UN World Population Prospects 2024 (population.un.org/wpp)","Malaysia":"UN World Population Prospects 2024 (population.un.org/wpp)","Japan":"UN World Population Prospects 2024 (population.un.org/wpp)"}},"B1":{"section":"B. Population Aged 65+","label":"Total population aged 65+","values":{"Vietnam":8651529.0,"Indonesia":19819797.0,"Thailand":10553348.0,"Singapore":758103.0,"Malaysia":2617322.0,"Japan":36766303.0},"years":{"Vietnam":"2023","Indonesia":"2023","Thailand":"2023","Singapore":"2023","Malaysia":"2023","Japan":"2023"},"sources":{"Vietnam":"UN World Population Prospects 2024 (population.un.org/wpp)","Indonesia":"UN World Population Prospects 2024 (population.un.org/wpp)","Thailand":"UN World Population Prospects 2024 (population.un.org/wpp)","Singapore":"UN World Population Prospects 2024 (population.un.org/wpp)","Malaysia":"UN World Population Prospects 2024 (population.un.org/wpp)","Japan":"UN World Population Prospects 2024 (population.un.org/wpp)"}},"B2":{"section":"B. Population Aged 65+","label":"Population aged 65+ as % of total population","values":{"Vietnam":0.0862,"Indonesia":0.0705,"Thailand":0.1472,"Singapore":0.131,"Malaysia":0.0745,"Japan":0.2956},"years":{"Vietnam":"2023","Indonesia":"2023","Thailand":"2023","Singapore":"2023","Malaysia":"2023","Japan":"2023"},"sources":{"Vietnam":"UN World Population Prospects 2024 (population.un.org/wpp)","Indonesia":"UN World Population Prospects 2024 (population.un.org/wpp)","Thailand":"UN World Population Prospects 2024 (population.un.org/wpp)","Singapore":"UN World Population Prospects 2024 (population.un.org/wpp)","Malaysia":"UN World Population Prospects 2024 (population.un.org/wpp)","Japan":"UN World Population Prospects 2024 (population.un.org/wpp)"}},"B3":{"section":"B. Population Aged 65+","label":"Population aged 80+","values":{"Vietnam":1530917.0,"Indonesia":2914546.0,"Thailand":2261495.0,"Singapore":153406.0,"Malaysia":406317.0,"Japan":12835550.0},"years":{"Vietnam":"2023","Indonesia":"2023","Thailand":"2023","Singapore":"2023","Malaysia":"2023","Japan":"2023"},"sources":{"Vietnam":"UN World Population Prospects 2024 (population.un.org/wpp)","Indonesia":"UN World Population Prospects 2024 (population.un.org/wpp)","Thailand":"UN World Population Prospects 2024 (population.un.org/wpp)","Singapore":"UN World Population Prospects 2024 (population.un.org/wpp)","Malaysia":"UN World Population Prospects 2024 (population.un.org/wpp)","Japan":"UN World Population Prospects 2024 (population.un.org/wpp)"}},"B4":{"section":"B. Population Aged 65+","label":"Population aged 80+ as % of total population","values":{"Vietnam":0.0153,"Indonesia":0.0104,"Thailand":0.0315,"Singapore":0.0265,"Malaysia":0.0116,"Japan":0.1032},"years":{"Vietnam":"2023","Indonesia":"2023","Thailand":"2023","Singapore":"2023","Malaysia":"2023","Japan":"2023"},"sources":{"Vietnam":"UN World Population Prospects 2024 (population.un.org/wpp)","Indonesia":"UN World Population Prospects 2024 (population.un.org/wpp)","Thailand":"UN World Population Prospects 2024 (population.un.org/wpp)","Singapore":"UN World Population Prospects 2024 (population.un.org/wpp)","Malaysia":"UN World Population Prospects 2024 (population.un.org/wpp)","Japan":"UN World Population Prospects 2024 (population.un.org/wpp)"}},"B5":{"section":"B. Population Aged 65+","label":"Old-age dependency ratio (65+ per 100 working-age 15–64)","values":{"Vietnam":12.7,"Indonesia":10.4,"Thailand":21.0,"Singapore":17.4,"Malaysia":10.6,"Japan":50.3},"years":{"Vietnam":"2023","Indonesia":"2023","Thailand":"2023","Singapore":"2023","Malaysia":"2023","Japan":"2023"},"sources":{"Vietnam":"UN World Population Prospects 2024 (population.un.org/wpp)","Indonesia":"UN World Population Prospects 2024 (population.un.org/wpp)","Thailand":"UN World Population Prospects 2024 (population.un.org/wpp)","Singapore":"UN World Population Prospects 2024 (population.un.org/wpp)","Malaysia":"UN World Population Prospects 2024 (population.un.org/wpp)","Japan":"UN World Population Prospects 2024 (population.un.org/wpp)"}},"C1":{"section":"C. Living Arrangements (60+)","label":"% living alone (single-person household)","values":{"Vietnam":7.7,"Indonesia":0.0503,"Thailand":0.129,"Singapore":11.4,"Malaysia":"4.3% / 6.9% (2024)","Japan":0.184},"years":{"Vietnam":"2022","Indonesia":"2025","Thailand":"2023","Singapore":"2024","Japan":"2023"},"sources":{"Vietnam":"Vietnam Aging Survey (VNAS) 2022","Indonesia":"BPS, Statistics of Aging Population 2025, Vol. 22, 2025, Catalogue no. 4104001, ISSN 2086-1036.","Thailand":"NSO","Singapore":"DOS","Malaysia":"HES2024, HES2019, HES2014","Japan":"Population Census 2020"}},"C2":{"section":"C. Living Arrangements (60+)","label":"% living with spouse / partner only","values":{"Vietnam":18.8,"Indonesia":0.229,"Thailand":0.259,"Singapore":27.2,"Malaysia":"16% - 21% *need explanation on headship","Japan":0.353},"years":{"Vietnam":"2022","Indonesia":"2025","Thailand":"2023","Singapore":"2024","Japan":"2023"},"sources":{"Vietnam":"Vietnam Aging Survey (VNAS) 2022","Indonesia":"BPS, Statistics of Aging Population 2025, Vol. 22, 2025, Catalogue no. 4104001, ISSN 2086-1036.","Thailand":"NSO","Singapore":"DOS","Malaysia":"HES2024, HES2019, HES2014","Japan":"Population Census 2020"}},"C3":{"section":"C. Living Arrangements (60+)","label":"% living with children/family/other","values":{"Vietnam":73.5,"Indonesia":0.7207,"Thailand":0.645,"Singapore":61.4,"Malaysia":"70%+ or over 2/3 *need explanation on headship","Japan":0.408},"years":{"Vietnam":"2022","Indonesia":"2025","Thailand":"2023","Japan":"2023"},"sources":{"Vietnam":"Vietnam Aging Survey (VNAS) 2022","Indonesia":"BPS, Statistics of Aging Population 2025, Vol. 22, 2025, Catalogue no. 4104001, ISSN 2086-1036.","Thailand":"NSO","Singapore":"Remaining but with assumptions","Malaysia":"HES2024, HES2019, HES2014","Japan":"Population Census 2020"}},"C4":{"section":"C. Living Arrangements (60+)","label":"% living in institutional care (nursing home / residential facility)","values":{"Vietnam":"n.a","Thailand":"n.a.","Singapore":1.765813738,"Malaysia":0.01,"Japan":0.054},"years":{"Vietnam":"2022","Indonesia":"2025","Thailand":"2023","Singapore":"2025","Japan":"2023"},"sources":{"Vietnam":"Vietnam Aging Survey (VNAS) 2022","Thailand":"n.a.","Singapore":"MOH","Malaysia":"HES2024, HES2019, HES2014","Japan":"Population Census 2020"}},"D1":{"section":"D. Marital Status (60+)","label":"% married / in union","values":{"Vietnam":63.9,"Indonesia":0.6715,"Thailand":0.617,"Singapore":71.1,"Malaysia":0.684,"Japan":0.66},"years":{"Vietnam":"2022","Indonesia":"2025","Thailand":"2023","Singapore":"2024","Malaysia":"2019","Japan":"2023"},"sources":{"Vietnam":"Vietnam Aging Survey (VNAS) 2022","Indonesia":"BPS, Statistics of Aging Population 2025, Vol. 22, 2025, Catalogue no. 4104001, ISSN 2086-1036.","Thailand":"NSO","Singapore":"DOS","Malaysia":"HES2024, HES2019, HES2014","Japan":"Population Census 2020"}},"D2":{"section":"D. Marital Status (60+)","label":"% widowed","values":{"Vietnam":29.5,"Indonesia":0.3016,"Thailand":0.285,"Singapore":15.0,"Malaysia":0.267,"Japan":0.21},"years":{"Vietnam":"2022","Indonesia":"2025","Thailand":"2023","Singapore":"2024","Japan":"2023"},"sources":{"Vietnam":"Vietnam Aging Survey (VNAS) 2022","Indonesia":"BPS, Statistics of Aging Population 2025, Vol. 22, 2025, Catalogue no. 4104001, ISSN 2086-1036.","Thailand":"NSO","Singapore":"DOS","Malaysia":"HES2024, HES2019, HES2014","Japan":"Population Census 2020"}},"D3":{"section":"D. Marital Status (60+)","label":"% divorced / separated","values":{"Vietnam":3.2,"Indonesia":0.0177,"Thailand":0.0403,"Singapore":5.0,"Malaysia":0.01,"Japan":0.06},"years":{"Vietnam":"2022","Indonesia":"2025","Thailand":"2023","Singapore":"2024","Japan":"2023"},"sources":{"Vietnam":"Vietnam Aging Survey (VNAS) 2022","Indonesia":"BPS, Statistics of Aging Population 2025, Vol. 22, 2025, Catalogue no. 4104001, ISSN 2086-1036.","Thailand":"NSO","Singapore":"DOS","Malaysia":"HES2024, HES2019, HES2014","Japan":"Population Census 2020"}},"D4":{"section":"D. Marital Status (60+)","label":"% never married / single","values":{"Vietnam":3.4,"Indonesia":0.0092,"Thailand":0.057,"Singapore":8.9,"Malaysia":0.038,"Japan":0.07},"years":{"Vietnam":"2022","Indonesia":"2025","Thailand":"2023","Singapore":"2024","Japan":"2023"},"sources":{"Vietnam":"Vietnam Aging Survey (VNAS) 2022","Indonesia":"BPS, Statistics of Aging Population 2025, Vol. 22, 2025, Catalogue no. 4104001, ISSN 2086-1036.","Thailand":"NSO","Singapore":"DOS","Malaysia":"HES2024, HES2019, HES2014","Japan":"Population Census 2020"}}},"countries":["Vietnam","Indonesia","Thailand","Singapore","Malaysia","Japan"],"meta":{"updated":"August 2026","sources":["AAAI Basic Info Sheet (cross-country demographics, per-country tabs)","Synthesized AAAI Input, as of Aug 2026 (policy & statistics indicators)"]}};
+
+const COUNTRIES = AAAI_DATA.countries;
+const COUNTRY_META = {
+  Vietnam:   { abbr:'VN', css:'--c-vn' },
+  Indonesia: { abbr:'ID', css:'--c-id' },
+  Thailand:  { abbr:'TH', css:'--c-th' },
+  Singapore: { abbr:'SG', css:'--c-sg' },
+  Malaysia:  { abbr:'MY', css:'--c-my' },
+  Japan:     { abbr:'JP', css:'--c-jp' },
+};
+function ccolor(country){ return getComputedStyle(document.documentElement).getPropertyValue(COUNTRY_META[country].css).trim(); }
+
+/* ---------------- curated policy recommendations ----------------
+   These are hand-written / vetted lines a policy team would author —
+   distinct from the auto-generated "gap" flags below. Add, edit or
+   remove entries here; the Recommendations view re-renders from this
+   array on load. Each entry can reference a domain/indicator code so
+   the reader can jump to the evidence. */
+const CURATED_RECOMMENDATIONS = [
+  {
+    country: 'Malaysia', priority: 'high', domain: '1. Policy & Statistics', code: '1.4',
+    text: 'Legislate a standalone age-discrimination protection covering employment and services. Malaysia currently relies on general Federal Constitution equality provisions with no dedicated enforcement mechanism — the weakest legal protection among the six countries reviewed.'
+  },
+  {
+    country: 'Thailand', priority: 'medium', domain: '1. Policy & Statistics', code: '1.4',
+    text: 'Consolidate scattered age-discrimination provisions (Older Persons Act, Labor Protection Act, constitutional clauses) into a single referenceable statute so employers and older workers have one clear standard.'
+  },
+  {
+    country: 'Malaysia', priority: 'high', domain: '1. Policy & Statistics', code: '1.5',
+    text: 'Move from a long-term care strategic framework to a funded national LTC financing mechanism (insurance or budgeted entitlement) — Malaysia is the only country in the group without one.'
+  },
+  {
+    country: 'Indonesia', priority: 'medium', domain: '1. Policy & Statistics', code: '1.12',
+    text: 'Centralize long-term care facility registration under a single authority. Bed and facility counts currently sit across multiple ministries with no consolidated national total.'
+  },
+  {
+    country: 'Singapore', priority: 'low', domain: '2. Income & Livelihood Security', code: '2.1',
+    text: 'Publish an official low-income threshold (or an agreed proxy) for older residents so old-age poverty can be tracked on a consistent, comparable basis with peer countries.'
+  },
+  {
+    country: 'Japan', priority: 'medium', domain: '1. Policy & Statistics', code: '1.13',
+    text: 'Extend the existing National Transfer Accounts programme to produce a National Time Transfer Account, capturing the economic value of unpaid family caregiving as the 80+ population grows.'
+  },
+];
+
+/* ---------------- status normalisation ---------------- */
+function normalizeStatus(raw){
+  if(raw===undefined || raw===null) return null;
+  const s = String(raw).trim();
+  if(s==='' || s.toLowerCase()==='nan' || s.toLowerCase()==='n.a' || s.toLowerCase()==='n.a.') return null;
+  const low = s.toLowerCase();
+  const numeric = s.replace(/,/g,'').replace(/%$/,'');
+  if(/^-?\d+(\.\d+)?$/.test(numeric)) return {type:'data', display:s};
+  if(/^https?:\/\//.test(s)) return {type:'yes', display:s, caveat:true};
+  if(/no standalone|no specific|no single|no sigle|not part of regular/.test(low)) return {type:'no', display:s};
+  if(/^yes\b/.test(low)){
+    if(/,\s*no/.test(low) || /\bno[\s\)]/.test(low.slice(3,30))) return {type:'partial', display:s};
+    return {type:'yes', display:s};
+  }
+  if(/^no\b/.test(low)) return {type:'no', display:s};
+  if(/maybe|not sure|tbc\b|confirming|unsure/.test(low)) return {type:'partial', display:s};
+  return {type:'unclear', display:s};
+}
+
+function indicatorFormat(ind){
+  const types = COUNTRIES.map(c => normalizeStatus(ind.values[c])).filter(Boolean).map(x=>x.type);
+  const binaryish = types.filter(t=>['yes','no','partial'].includes(t)).length;
+  if(types.length===0) return 'empty';
+  return binaryish >= types.length * 0.6 ? 'binary' : 'other';
+}
+
+/* ---------------- demographic helpers ---------------- */
+function demoVal(code, country){
+  const row = AAAI_DATA.demographics[code];
+  if(!row) return null;
+  let v = row.values[country];
+  if(v===undefined || v===null || v==='' ) return null;
+  return v;
+}
+function demoNum(code, country){
+  const v = demoVal(code, country);
+  if(v===null) return null;
+  const n = parseFloat(String(v).replace(/,/g,''));
+  return isNaN(n) ? null : n;
+}
+function demoYear(code, country){
+  const row = AAAI_DATA.demographics[code];
+  return row && row.years ? (row.years[country] || '') : '';
+}
+function demoSource(code, country){
+  const row = AAAI_DATA.demographics[code];
+  return row && row.sources ? (row.sources[country] || '') : '';
+}
+function fmtInt(n){ return n===null ? '—' : Math.round(n).toLocaleString('en-US'); }
+function fmtPct(n){ return n===null ? '—' : (n<=1 ? (n*100).toFixed(1) : n.toFixed(1)) + '%'; }
+function pctVal(n){ return n===null ? null : (n<=1 ? n*100 : n); }
+
+/* ============================================================
+   TAB NAVIGATION
+   ============================================================ */
+const views = ['overview','map','profiles','domains','compare','resources','about'];
+function showView(name){
+  views.forEach(v=>{
+    document.getElementById('view-'+v).classList.toggle('active', v===name);
+    document.querySelector(`nav.tabs button[data-view="${v}"]`).classList.toggle('active', v===name);
+  });
+  window.scrollTo({top:0, behavior:'smooth'});
+}
+document.querySelectorAll('nav.tabs button').forEach(btn=>{
+  btn.addEventListener('click', ()=> showView(btn.dataset.view));
+});
+
+/* ============================================================
+   OVERVIEW
+   ============================================================ */
+function renderOverview(){
+  const total60 = COUNTRIES.reduce((s,c)=> s + (demoNum('A1',c)||0), 0);
+  const total65 = COUNTRIES.reduce((s,c)=> s + (demoNum('B1',c)||0), 0);
+  const avgDep = COUNTRIES.reduce((s,c)=> s + (demoNum('B5',c)||0), 0) / COUNTRIES.length;
+
+  document.getElementById('hero-figure').textContent = (total60/1e6).toFixed(0) + 'M';
+  document.getElementById('hero-sub1').textContent = fmtInt(total65);
+  document.getElementById('hero-sub2').textContent = avgDep.toFixed(1);
+
+  const wrap = document.getElementById('overview-cards');
+  wrap.innerHTML = '';
+  COUNTRIES.forEach(c=>{
+    const a1 = demoNum('A1',c), a2 = pctVal(demoNum('A2',c)), b5 = demoNum('B5',c);
+    const div = document.createElement('div');
+    div.className = 'country-card';
+    div.innerHTML = `
+      <h3><span class="flagdot" style="background:${ccolor(c)}"></span>${c}</h3>
+      <div class="row"><span>Population 60+</span><b>${fmtInt(a1)}</b></div>
+      <div class="row"><span>Share of population</span><b>${a2===null?'—':a2.toFixed(1)+'%'}</b></div>
+      <div class="row"><span>Old-age dependency ratio</span><b>${b5===null?'—':b5.toFixed(1)}</b></div>
+    `;
+    div.addEventListener('click', ()=>{ currentProfileCountry=c; showView('profiles'); renderProfiles(); });
+    wrap.appendChild(div);
+  });
+
+  const ctx = document.getElementById('overview-chart');
+  if(overviewChart) overviewChart.destroy();
+  overviewChart = new Chart(ctx, {
+    type:'bar',
+    data:{
+      labels: COUNTRIES,
+      datasets:[{
+        label:'Population aged 60+ (% of total)',
+        data: COUNTRIES.map(c=> pctVal(demoNum('A2',c))),
+        backgroundColor: COUNTRIES.map(c=>ccolor(c)),
+        borderRadius:2, maxBarThickness:46
+      }]
+    },
+    options:{
+      plugins:{legend:{display:false}, tooltip:{callbacks:{label:(i)=> i.formattedValue+'%'}}},
+      scales:{ y:{ beginAtZero:true, ticks:{callback:v=>v+'%'}, grid:{color:'#D8D0BA'} }, x:{grid:{display:false}} }
+    }
+  });
+}
+let overviewChart=null;
+
+/* ============================================================
+   MAP
+   ============================================================ */
+// Approximate centroid coordinates — good enough for a schematic
+// relative-position map, not a precise political map.
+const COUNTRY_COORDS = {
+  Vietnam:   { lat: 16.0,  lng: 108.0 },
+  Indonesia: { lat: -2.0,  lng: 118.0 },
+  Thailand:  { lat: 15.0,  lng: 101.0 },
+  Singapore: { lat: 1.35,  lng: 103.8 },
+  Malaysia:  { lat: 4.0,   lng: 109.5 },
+  Japan:     { lat: 36.0,  lng: 138.0 },
+};
+const MAP_VIEWBOX = { w: 700, h: 460 };
+function projectLng(lng){ return 50 + (lng - 95) / 50 * 600; }
+function projectLat(lat){ return 40 + (45 - lat) / 55 * 400; }
+
+function mapRadius(pop, allPops){
+  const min = Math.sqrt(Math.min(...allPops));
+  const max = Math.sqrt(Math.max(...allPops));
+  const r = Math.sqrt(pop);
+  const t = max===min ? 0.5 : (r - min) / (max - min);
+  return 12 + t * 34; // 12px .. 46px
+}
+
+function renderMap(){
+  const pops = COUNTRIES.map(c => demoNum('A1', c) || 0);
+  let nodes = '';
+  COUNTRIES.forEach(c=>{
+    const { lat, lng } = COUNTRY_COORDS[c];
+    const x = projectLng(lng), y = projectLat(lat);
+    const pop = demoNum('A1', c) || 0;
+    const r = mapRadius(pop, pops);
+    nodes += `
+      <g class="map-node" data-country="${c}" transform="translate(${x},${y})">
+        <circle r="${r}" fill="${ccolor(c)}" fill-opacity="0.82"></circle>
+        <text x="0" y="${-r-8}" text-anchor="middle">${c}</text>
+        <text class="pop" x="0" y="${-r+18 > 4 ? 4 : -r+18}" text-anchor="middle" fill="#fff" style="font-size:${Math.min(11, r*0.5)}px">${(pop/1e6).toFixed(1)}M</text>
+      </g>`;
+  });
+
+  const svg = `<svg viewBox="0 0 ${MAP_VIEWBOX.w} ${MAP_VIEWBOX.h}" xmlns="http://www.w3.org/2000/svg">
+    <rect x="0" y="0" width="${MAP_VIEWBOX.w}" height="${MAP_VIEWBOX.h}" fill="var(--paper)"></rect>
+    ${nodes}
+  </svg>`;
+  document.getElementById('map-wrap').innerHTML = svg;
+
+  document.querySelectorAll('.map-node').forEach(node=>{
+    node.addEventListener('click', ()=>{
+      currentProfileCountry = node.dataset.country;
+      showView('profiles');
+      renderProfiles();
+    });
+  });
+
+  const legend = document.getElementById('map-legend');
+  legend.innerHTML = COUNTRIES.map(c=>`
+    <div class="item"><span class="swatch" style="background:${ccolor(c)}"></span>${c} — ${fmtInt(demoNum('A1',c))} aged 60+</div>
+  `).join('');
+}
+
+/* ============================================================
+   COUNTRY PROFILES
+   ============================================================ */
+let currentProfileCountry = COUNTRIES[0];
+
+function domainGapCounts(country, domain){
+  let yes=0,no=0,partial=0;
+  domain.indicators.forEach(ind=>{
+    if(indicatorFormat(ind)!=='binary') return;
+    const st = normalizeStatus(ind.values[country]);
+    if(!st){ partial++; return; } // blank / not-yet-collected counts as pending
+    if(st.type==='yes') yes++;
+    else if(st.type==='no') no++;
+    else if(st.type==='partial') partial++;
+  });
+  return {yes,no,partial};
+}
+
+function renderCountryRail(){
+  const rail = document.getElementById('country-rail');
+  rail.innerHTML = '';
+  COUNTRIES.forEach(c=>{
+    const b = document.createElement('button');
+    b.innerHTML = `<span class="dot" style="background:${ccolor(c)}"></span>${c}`;
+    b.className = c===currentProfileCountry ? 'active':'';
+    b.addEventListener('click', ()=>{ currentProfileCountry=c; renderProfiles(); });
+    rail.appendChild(b);
+  });
+}
+
+function livingArrangementRows(country){
+  const rows = [
+    ['C1','Living alone'], ['C2','With spouse/partner only'],
+    ['C3','With children / family'], ['C4','Institutional care']
+  ];
+  return rows.map(([code,label])=>{
+    let v = pctVal(demoNum(code,country));
+    const raw = demoVal(code,country);
+    return {label, v, raw, year: demoYear(code,country), source: demoSource(code,country)};
+  });
+}
+function maritalRows(country){
+  const rows = [['D1','Married / in union'], ['D2','Widowed'], ['D3','Divorced / separated'], ['D4','Never married']];
+  return rows.map(([code,label])=>{
+    let v = pctVal(demoNum(code,country));
+    const raw = demoVal(code,country);
+    return {label, v, raw, year: demoYear(code,country), source: demoSource(code,country)};
+  });
+}
+function renderBarPanel(elId, rows){
+  const el = document.getElementById(elId);
+  el.innerHTML = rows.map(r=>{
+    const w = r.v===null ? 0 : Math.min(100, r.v);
+    const display = r.v===null ? (r.raw ? String(r.raw).slice(0,18) : '—') : r.v.toFixed(1)+'%';
+    const tip = [r.source, r.year ? `(${r.year})` : ''].filter(Boolean).join(' ');
+    return `<div class="bar-row" ${tip ? `title="${tip.replace(/"/g,'&quot;')}"` : ''}>
+      <span class="lbl">${r.label}</span>
+      <span class="track"><span class="fill" style="width:${w}%"></span></span>
+      <span class="val">${display}</span>
+    </div>`;
+  }).join('');
+  // Compact source/year footnote — de-duplicated across rows
+  const notes = [...new Set(rows.filter(r=>r.source).map(r=> r.source + (r.year?` (${r.year})`:'')))];
+  const noteEl = document.getElementById(elId + '-note');
+  if(noteEl) noteEl.textContent = notes.length ? 'Source: ' + notes.join(' · ') : '';
+}
+
+const POPULATION_CODES = [
+  'A1','A2','A3','A4','A5','B1','B2','B3','B4','B5'
+];
+function renderPopulationTable(country){
+  const tbl = document.getElementById('population-table');
+  const rows = POPULATION_CODES.map(code=>{
+    const row = AAAI_DATA.demographics[code];
+    if(!row) return '';
+    const raw = row.values[country];
+    const year = (row.years && row.years[country]) || '—';
+    const source = (row.sources && row.sources[country]) || '';
+    let display;
+    if(raw===undefined || raw===null || raw==='') display = 'Pending';
+    else {
+      const n = parseFloat(String(raw).replace(/,/g,''));
+      if(isNaN(n)) display = String(raw);
+      else if(/ratio/i.test(row.label)) display = n.toFixed(1);
+      else if(/%|percent/i.test(row.label)) display = fmtPct(n);
+      else display = n < 1000 ? n.toLocaleString('en-US',{maximumFractionDigits:2}) : fmtInt(n);
+    }
+    return `<tr>
+      <td class="code">${code}</td>
+      <td class="name">${row.label}</td>
+      <td class="num" style="font-family:var(--font-mono)">${display}</td>
+      <td style="color:var(--ink-soft);font-size:12px">${year}</td>
+      <td style="color:var(--ink-soft);font-size:12px">${source}</td>
+    </tr>`;
+  }).join('');
+  tbl.innerHTML = `<thead><tr><th style="width:44px">Code</th><th>Indicator</th><th>Value</th><th>Year</th><th>Source</th></tr></thead><tbody>${rows}</tbody>`;
+}
+
+function renderProfiles(){
+  renderCountryRail();
+  const c = currentProfileCountry;
+  document.getElementById('profile-name').textContent = c;
+  const a1=demoNum('A1',c), a2=pctVal(demoNum('A2',c)), b1=demoNum('B1',c), b3=demoNum('B3',c), b5=demoNum('B5',c);
+  document.getElementById('profile-meta').textContent =
+    `${fmtInt(a1)} people aged 60+ (${a2===null?'—':a2.toFixed(1)+'%'} of the population) · ${fmtInt(b3)} aged 80+ · dependency ratio ${b5===null?'—':b5.toFixed(1)}`;
+
+  renderPopulationTable(c);
+  renderBarPanel('panel-living', livingArrangementRows(c));
+  renderBarPanel('panel-marital', maritalRows(c));
+
+  const strip = document.getElementById('score-strip');
+  strip.innerHTML = '';
+  AAAI_DATA.domains.forEach((d, idx)=>{
+    const {yes,no,partial} = domainGapCounts(c, d);
+    const cell = document.createElement('div');
+    cell.className = 'score-cell';
+    cell.innerHTML = `
+      <div class="dnum">${d.name.split('.')[0]}</div>
+      <div class="dname">${d.name.replace(/^\d+\.\s*/,'')}</div>
+      <div class="counts">
+        <span class="pill yes">${yes} yes</span>
+        <span class="pill no">${no} gap</span>
+        ${partial? `<span class="pill partial">${partial} pending</span>`:''}
+      </div>`;
+    cell.addEventListener('click', ()=>{ currentDomainIndex=idx; showView('domains'); renderDomains(); });
+    strip.appendChild(cell);
+  });
+  renderCountryRecommendations(c);
+}
+
+/* ============================================================
+   POLICY DOMAINS
+   ============================================================ */
+let currentDomainIndex = 0;
+let gapsOnly = false;
+let searchTerm = '';
+
+function renderDomainTabs(){
+  const wrap = document.getElementById('domain-tabs');
+  wrap.innerHTML = '';
+  AAAI_DATA.domains.forEach((d, idx)=>{
+    const b = document.createElement('button');
+    b.textContent = d.name;
+    b.className = idx===currentDomainIndex ? 'active':'';
+    b.addEventListener('click', ()=>{ currentDomainIndex=idx; renderDomains(); });
+    wrap.appendChild(b);
+  });
+}
+
+function renderDomains(){
+  renderDomainTabs();
+  const domain = AAAI_DATA.domains[currentDomainIndex];
+  document.getElementById('domain-desc').textContent = domain.desc;
+  document.getElementById('domain-composite-title').textContent = `${domain.name} — composite index`;
+
+  const thead = document.getElementById('indicators-thead');
+  thead.innerHTML = `<tr><th style="width:52px">Code</th><th style="width:230px">Indicator</th>` +
+    COUNTRIES.map(c=>`<th style="text-align:center">${COUNTRY_META[c].abbr}</th>`).join('') + `</tr>`;
+
+  const tbody = document.getElementById('indicators-tbody');
+  tbody.innerHTML = '';
+  let shown = 0;
+  domain.indicators.forEach((ind, i)=>{
+    const format = indicatorFormat(ind);
+    const hasGap = COUNTRIES.some(c=> (normalizeStatus(ind.values[c])||{}).type==='no');
+    if(gapsOnly && !hasGap) return;
+    if(searchTerm && !(ind.name.toLowerCase().includes(searchTerm) || ind.code.includes(searchTerm))) return;
+    shown++;
+
+    const tr = document.createElement('tr');
+    tr.className = 'indicator-row';
+    const rowId = `row-${currentDomainIndex}-${i}`;
+    tr.dataset.target = rowId;
+    tr.innerHTML = `<td class="code">${ind.code}</td><td class="name">${ind.name}</td>` +
+      COUNTRIES.map(c=>{
+        const st = normalizeStatus(ind.values[c]);
+        const yr = (ind.years && ind.years[c]) ? ` (${ind.years[c]})` : '';
+        if(!st){
+          if(format==='binary') return `<td class="status-cell" title="Pending"><span class="status-dot partial"></span></td>`;
+          return `<td class="status-cell num" style="font-family:var(--font-mono);font-size:12px;color:var(--ink-soft);font-style:italic">Pending</td>`;
+        }
+        if(st.type==='data') return `<td class="status-cell num" style="font-family:var(--font-mono);font-size:12px" title="${yr.trim()}">${st.display}${yr}</td>`;
+        const tip = (st.type==='partial' ? ('Pending — '+st.display) : st.display) + yr;
+        return `<td class="status-cell" title="${tip.replace(/"/g,'&quot;')}"><span class="status-dot ${st.type}"></span></td>`;
+      }).join('');
+    tbody.appendChild(tr);
+
+    const dtr = document.createElement('tr');
+    dtr.className = 'detail-row';
+    dtr.id = rowId;
+    const td = document.createElement('td');
+    td.colSpan = COUNTRIES.length + 2;
+    td.innerHTML = `<div class="def-text">${ind.def}</div>
+      <div class="detail-grid">${COUNTRIES.map(c=>{
+        const st = normalizeStatus(ind.values[c]);
+        const src = ind.sources[c] || '';
+        const yr = (ind.years && ind.years[c]) || '';
+        let cval;
+        if(!st) cval = '<em>Pending</em>';
+        else if(st.type==='partial') cval = `<em>Pending</em> — ${st.display}`;
+        else cval = st.display;
+        const srcYr = [src, yr ? `(${yr})` : ''].filter(Boolean).join(' ');
+        return `<div class="detail-cell">
+          <div class="cname">${c}</div>
+          <div class="cval">${cval}</div>
+          ${srcYr ? `<div class="csrc">${srcYr}</div>` : ''}
+        </div>`;
+      }).join('')}</div>`;
+    dtr.appendChild(td);
+    tbody.appendChild(dtr);
+
+    tr.addEventListener('click', ()=> dtr.classList.toggle('open'));
+  });
+
+  document.getElementById('indicator-count').textContent = `${shown} of ${domain.indicators.length} indicators`;
+  renderDomainRecommendations(domain);
+}
+
+document.getElementById('search-indicators').addEventListener('input', (e)=>{
+  searchTerm = e.target.value.trim().toLowerCase();
+  renderDomains();
+});
+document.getElementById('toggle-gaps').addEventListener('change', (e)=>{
+  gapsOnly = e.target.checked;
+  renderDomains();
+});
+
+/* ============================================================
+   COMPARE / INFOGRAPHIC BY DOMAIN
+   ============================================================ */
+let compareChart=null;
+let domainInfographicChart=null;
+
+function renderDomainInfographic(domIdx){
+  const domain = AAAI_DATA.domains[domIdx];
+  document.getElementById('infographic-domain-desc').textContent = domain.desc;
+
+  const binaryInds = domain.indicators.filter(ind => indicatorFormat(ind)==='binary');
+  const quantInds = domain.indicators.filter(ind => indicatorFormat(ind)==='other');
+
+  const pctYes = COUNTRIES.map(c=>{
+    if(!binaryInds.length) return 0;
+    const yesCount = binaryInds.filter(ind=>{
+      const st = normalizeStatus(ind.values[c]);
+      return st && st.type==='yes';
+    }).length;
+    return Math.round((yesCount / binaryInds.length) * 100);
+  });
+
+  const ctx = document.getElementById('domain-infographic-chart');
+  if(domainInfographicChart) domainInfographicChart.destroy();
+  domainInfographicChart = new Chart(ctx, {
+    type:'bar',
+    data:{ labels:COUNTRIES, datasets:[{
+      label:`% of ${domain.name} indicators answered Yes`,
+      data: pctYes,
+      backgroundColor: COUNTRIES.map(c=>ccolor(c)),
+      borderRadius:2, maxBarThickness:52
+    }]},
+    options:{ plugins:{legend:{display:false}, tooltip:{callbacks:{label:(i)=> i.formattedValue+'% Yes'}}},
+      scales:{ y:{min:0,max:100,ticks:{callback:v=>v+'%'}, grid:{color:'#DED2B0'}}, x:{grid:{display:false}} } }
+  });
+
+  const statsEl = document.getElementById('infographic-quant-stats');
+  if(!quantInds.length){
+    statsEl.innerHTML = '';
+  } else {
+    statsEl.innerHTML = quantInds.slice(0,3).map(ind=>
+      COUNTRIES.map(c=>{
+        const st = normalizeStatus(ind.values[c]);
+        return `<div class="stat-card">
+          <div class="sc-label">${ind.code} · ${c}</div>
+          <div class="sc-value">${st ? st.display : 'Pending'}</div>
+        </div>`;
+      }).join('')
+    ).join('');
+  }
+}
+
+function populateCompareSelects(){
+  const domSel = document.getElementById('compare-domain');
+  domSel.innerHTML = AAAI_DATA.domains.map((d,i)=>`<option value="${i}">${d.name}</option>`).join('');
+  domSel.addEventListener('change', ()=>{
+    renderDomainInfographic(+domSel.value);
+    populateIndicatorSelect();
+  });
+  renderDomainInfographic(0);
+  populateIndicatorSelect();
+  document.getElementById('compare-indicator').addEventListener('change', renderCompare);
+}
+function populateIndicatorSelect(){
+  const domIdx = +document.getElementById('compare-domain').value;
+  const indSel = document.getElementById('compare-indicator');
+  indSel.innerHTML = AAAI_DATA.domains[domIdx].indicators.map((ind,i)=>`<option value="${i}">${ind.code} — ${ind.name}</option>`).join('');
+  renderCompare();
+}
+function renderCompare(){
+  const domIdx = +document.getElementById('compare-domain').value;
+  const indIdx = +document.getElementById('compare-indicator').value;
+  const ind = AAAI_DATA.domains[domIdx].indicators[indIdx];
+  document.getElementById('compare-def').textContent = ind.def;
+
+  const format = indicatorFormat(ind);
+  const ctx = document.getElementById('compare-chart');
+  if(compareChart) compareChart.destroy();
+
+  if(format==='binary'){
+    const scoreMap = {yes:1, partial:0.5, no:0, data:null, unclear:0.5};
+    compareChart = new Chart(ctx, {
+      type:'bar',
+      data:{ labels:COUNTRIES, datasets:[{
+        label: ind.name,
+        data: COUNTRIES.map(c=>{ const st=normalizeStatus(ind.values[c]); return st ? scoreMap[st.type] : 0.5; }),
+        backgroundColor: COUNTRIES.map(c=>{ const st=normalizeStatus(ind.values[c]); if(!st) return '#B07F1E'; return st.type==='no' ? '#9C4530' : (st.type==='partial'||st.type==='unclear' ? '#B07F1E' : ccolor(c)); }),
+        borderRadius:2, maxBarThickness:52
+      }]},
+      options:{ plugins:{legend:{display:false}}, scales:{ y:{min:0,max:1,ticks:{callback:v=> v===1?'Yes':v===0.5?'Pending':v===0?'No':''}}, x:{grid:{display:false}} } }
+    });
+  } else {
+    const vals = COUNTRIES.map(c=>{ const st=normalizeStatus(ind.values[c]); if(!st) return null; const n=parseFloat(st.display.replace(/[^0-9.\-]/g,'')); return isNaN(n)?null:n; });
+    compareChart = new Chart(ctx, {
+      type:'bar',
+      data:{ labels:COUNTRIES, datasets:[{ label: ind.name, data: vals, backgroundColor: COUNTRIES.map(c=>ccolor(c)), borderRadius:2, maxBarThickness:52 }]},
+      options:{ plugins:{legend:{display:false}}, scales:{ x:{grid:{display:false}} } }
+    });
+  }
+
+  const tbl = document.getElementById('compare-table');
+  tbl.innerHTML = `<tr><th>Country</th><th>Value</th><th>Year</th><th>Source</th></tr>` + COUNTRIES.map(c=>{
+    const st = normalizeStatus(ind.values[c]);
+    const val = !st ? 'Pending' : (st.type==='partial' ? `Pending — ${st.display}` : st.display);
+    const yr = (ind.years && ind.years[c]) || '—';
+    return `<tr><td>${c}</td><td>${val}</td><td style="color:var(--ink-soft);font-size:12px">${yr}</td><td style="color:var(--ink-soft);font-size:12px">${ind.sources[c]||''}</td></tr>`;
+  }).join('');
+}
+
+/* ============================================================
+   RECOMMENDATIONS
+   ============================================================ */
+function autoGaps(){
+  const list = [];
+  COUNTRIES.forEach(country=>{
+    AAAI_DATA.domains.forEach(domain=>{
+      const gaps = domain.indicators.filter(ind=>{
+        if(indicatorFormat(ind)!=='binary') return false;
+        const st = normalizeStatus(ind.values[country]);
+        return st && st.type==='no';
+      });
+      if(gaps.length){
+        list.push({country, domain: domain.name, count: gaps.length, codes: gaps.map(g=>g.code).join(', ')});
+      }
+    });
+  });
+  return list.sort((a,b)=> b.count - a.count);
+}
+
+function curatedItemHTML(r, showDomain, showCountry){
+  return `
+    <div class="reco-item">
+      <div class="country-tag"><span class="flagdot" style="width:9px;height:9px;border-radius:50%;display:inline-block;background:${ccolor(r.country)}"></span>${showCountry ? r.country : ''}</div>
+      <div class="priority ${r.priority}">${r.priority}</div>
+      <div>
+        <p>${r.text}</p>
+        <div class="domain-ref">${showDomain ? r.domain+' — ' : ''}indicator ${r.code}</div>
+      </div>
+    </div>`;
+}
+function autoItemHTML(g, showDomain){
+  return `
+    <div class="reco-item">
+      <div class="country-tag"><span class="flagdot" style="width:9px;height:9px;border-radius:50%;display:inline-block;background:${ccolor(g.country)}"></span>${g.country}</div>
+      <div class="priority ${g.count>=3?'high':g.count===2?'medium':'low'}">${g.count} gap${g.count>1?'s':''}</div>
+      <div>
+        <p>${g.count} indicator${g.count>1?'s':''} answered "No"${showDomain?` in <b>${g.domain}</b>`:''}.</p>
+        <div class="domain-ref">Indicators: ${g.codes}</div>
+      </div>
+    </div>`;
+}
+
+function renderDomainRecommendations(domain){
+  const curatedEl = document.getElementById('domain-reco-curated');
+  const matches = CURATED_RECOMMENDATIONS.filter(r=> r.domain === domain.name);
+  curatedEl.innerHTML = matches.length ? matches.map(r=>curatedItemHTML(r,false,true)).join('')
+    : `<div class="reco-item" style="grid-template-columns:1fr;"><p style="color:var(--ink-soft);font-size:13px;">No curated recommendations for this domain yet.</p></div>`;
+
+  const gaps = autoGaps().filter(g=> g.domain === domain.name);
+  const autoEl = document.getElementById('domain-reco-auto');
+  autoEl.innerHTML = gaps.length ? gaps.map(g=>autoItemHTML(g,false)).join('') : '';
+}
+
+function renderCountryRecommendations(country){
+  const curatedEl = document.getElementById('profile-reco-curated');
+  const matches = CURATED_RECOMMENDATIONS.filter(r=> r.country === country);
+  curatedEl.innerHTML = matches.length ? matches.map(r=>curatedItemHTML(r,true,false)).join('')
+    : `<div class="reco-item" style="grid-template-columns:1fr;"><p style="color:var(--ink-soft);font-size:13px;">No curated recommendations for ${country} yet.</p></div>`;
+
+  const gaps = autoGaps().filter(g=> g.country === country);
+  const autoEl = document.getElementById('profile-reco-auto');
+  autoEl.innerHTML = gaps.length ? gaps.map(g=>autoItemHTML(g,true)).join('') : '';
+}
+
+/* ============================================================
+   INIT
+   ============================================================ */
+function init(){
+  document.getElementById('data-updated').textContent = AAAI_DATA.meta ? AAAI_DATA.meta.updated : '';
+  renderOverview();
+  renderMap();
+  renderProfiles();
+  renderDomains();
+  populateCompareSelects();
+}
+init();
