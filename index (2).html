@@ -1,0 +1,291 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>AAAI — Active Ageing Index · ASEAN + Japan</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,600;9..144,700&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="styles.css">
+<!-- tokens.css is regenerated automatically from /tokens (synced from Figma via Tokens Studio) — see README -->
+<link rel="stylesheet" href="tokens.css">
+</head>
+<body>
+
+<header class="top">
+  <div class="shell top-inner">
+    <div class="brand">
+      <img src="assets/logo-acai.png" alt="ASEAN Centre for Active Ageing and Innovation" class="acai-logo" onerror="this.style.display='none'">
+      <div>
+        <h1>Active Ageing Index</h1>
+        <div class="sub">Vietnam · Indonesia · Thailand · Singapore · Malaysia · Japan</div>
+      </div>
+    </div>
+    <div class="updated">
+      <div class="partner-label">Supported by</div>
+      <div class="partner-logos">
+        <img src="assets/logo-idrc.png" alt="IDRC · CRDI · Canada" class="partner-logo" onerror="this.style.display='none'">
+        <img src="assets/logo-asean.png" alt="ASEAN" class="partner-logo partner-logo-round" onerror="this.style.display='none'">
+        <img src="assets/logo-nips.png" alt="National Institute of Population and Social Security Research" class="partner-logo" onerror="this.style.display='none'">
+      </div>
+      Data as of <span id="data-updated"></span>
+    </div>
+  </div>
+  <div class="shell">
+    <p class="strapline">Comparative index across 6 domains — 62 AAAI indicators plus 18 basic demographic indicators — for older persons aged 60+ across 5 ASEAN member states and Japan as a reference country.</p>
+    <nav class="tabs">
+      <button data-view="overview" class="active">Overview</button>
+      <button data-view="map">Map</button>
+      <button data-view="profiles">Country profiles</button>
+      <button data-view="domains">Domain</button>
+      <button data-view="compare">Infographic by domain</button>
+      <button data-view="resources">Resources</button>
+      <button data-view="about">About the data</button>
+    </nav>
+  </div>
+</header>
+
+<main class="shell">
+
+  <!-- ============ OVERVIEW ============ -->
+  <section id="view-overview" class="view active">
+    <div class="hero">
+      <div>
+        <div class="stat-figure num" id="hero-figure">—</div>
+        <div class="stat-label">People aged 60 and over across 5 ASEAN member states and Japan — the population this index exists to serve.</div>
+      </div>
+      <div class="hero-supporting">
+        <div class="item">
+          <svg class="hero-icon" viewBox="0 0 24 24"><path d="M12 2 L12 22 M4 8 L20 8 M6 14 L18 14" stroke="currentColor" stroke-width="1.6" fill="none" stroke-linecap="round"/></svg>
+          <div class="v num" id="hero-sub1">—</div><div class="l">Total aged 65+</div>
+        </div>
+        <div class="item">
+          <svg class="hero-icon" viewBox="0 0 24 24"><circle cx="12" cy="8" r="3.4" stroke="currentColor" stroke-width="1.6" fill="none"/><path d="M5 20c1.2-4 4-6 7-6s5.8 2 7 6" stroke="currentColor" stroke-width="1.6" fill="none" stroke-linecap="round"/></svg>
+          <div class="v num" id="hero-sub2">—</div><div class="l">Average old-age dependency ratio</div>
+        </div>
+        <div class="item">
+          <svg class="hero-icon" viewBox="0 0 24 24"><path d="M3 12a9 9 0 1 0 18 0 9 9 0 1 0-18 0Z" stroke="currentColor" stroke-width="1.6" fill="none"/><path d="M3 12h18M12 3c2.4 2.4 3.6 5.6 3.6 9s-1.2 6.6-3.6 9c-2.4-2.4-3.6-5.6-3.6-9s1.2-6.6 3.6-9Z" stroke="currentColor" stroke-width="1.3" fill="none"/></svg>
+          <div class="v num">6</div><div class="l">Countries tracked — 5 ASEAN + Japan</div>
+        </div>
+        <div class="item">
+          <svg class="hero-icon" viewBox="0 0 24 24"><path d="M4 4h16v16H4z" stroke="currentColor" stroke-width="1.6" fill="none"/><path d="M4 9h16M9 4v16" stroke="currentColor" stroke-width="1.6"/></svg>
+          <div class="v num">62</div><div class="l">AAAI indicators, 6 domains</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="composite-panel">
+      <div class="composite-head">
+        <h3>Overall AAAI Composite Index</h3>
+        <span class="pending-badge">Pending</span>
+      </div>
+      <p class="composite-note">A single regional composite score, aggregating all six domains through the finalized AAAI normalization and weighting methodology. <em>This section is intentionally left blank pending the final composite scoring methodology and complete, validated indicator dataset — placeholder only, not a computed score.</em></p>
+    </div>
+
+    <div class="section-head">
+      <h2>Snapshot by country</h2>
+      <p>Click a country to open its full profile — demographics, living arrangements and a policy scorecard.</p>
+    </div>
+    <div class="grid-cards" id="overview-cards"></div>
+
+    <div class="section-head">
+      <h2>Share of population aged 60+</h2>
+    </div>
+    <div class="chart-wrap"><canvas id="overview-chart" height="90"></canvas></div>
+  </section>
+
+  <!-- ============ MAP ============ -->
+  <section id="view-map" class="view">
+    <div class="section-head" style="margin-top:0;">
+      <h2>ASEAN + Japan</h2>
+      <p>Circle size is proportional to each country's population aged 60+. Click a country to open its profile.</p>
+    </div>
+    <div class="chart-wrap" id="map-wrap"></div>
+    <div class="map-legend" id="map-legend"></div>
+  </section>
+
+  <!-- ============ COUNTRY PROFILES ============ -->
+  <section id="view-profiles" class="view">
+    <div class="profile-layout">
+      <div class="country-rail" id="country-rail"></div>
+      <div class="profile-body">
+        <h2 id="profile-name">—</h2>
+        <div class="profile-meta" id="profile-meta"></div>
+
+        <div class="subgrid">
+          <div class="panel">
+            <h4>Living arrangements, aged 60+</h4>
+            <div id="panel-living"></div>
+            <div class="panel-source-note" id="panel-living-note"></div>
+          </div>
+          <div class="panel">
+            <h4>Marital status, aged 60+</h4>
+            <div id="panel-marital"></div>
+            <div class="panel-source-note" id="panel-marital-note"></div>
+          </div>
+        </div>
+
+        <div class="section-head" style="margin-top:8px;">
+          <h2 style="font-size:16px;">Policy scorecard by domain</h2>
+          <p>Counts of indicators answered Yes / No / Pending for this country. Click a domain to see the underlying evidence.</p>
+        </div>
+        <div class="score-strip" id="score-strip"></div>
+
+        <div class="section-head" style="margin-top:24px;">
+          <h2 style="font-size:16px;">Recommendations for this country</h2>
+          <p>Curated guidance and auto-flagged gaps, specific to this country, across all six domains.</p>
+        </div>
+        <div class="reco-list" id="profile-reco-curated"></div>
+        <div class="reco-list" id="profile-reco-auto" style="margin-top:10px;"></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============ POLICY DOMAINS ============ -->
+  <section id="view-domains" class="view">
+    <div class="section-head" style="margin-top:0;">
+      <h2>Domain indicators</h2>
+      <p>62 AAAI indicators across six domains. Status dots are computed from each country's reported value — click a row for the full evidence and sources.</p>
+    </div>
+    <div class="domain-tabs" id="domain-tabs"></div>
+    <p class="domain-desc" id="domain-desc"></p>
+
+    <div class="toolbar">
+      <label><input type="checkbox" id="toggle-gaps"> Show only indicators with at least one "No"</label>
+      <input type="search" id="search-indicators" placeholder="Search indicators…">
+    </div>
+    <div style="font-size:12px;color:var(--ink-soft);margin-bottom:8px;" id="indicator-count"></div>
+
+    <table class="indicators">
+      <thead id="indicators-thead"></thead>
+      <tbody id="indicators-tbody"></tbody>
+    </table>
+
+    <div class="composite-panel">
+      <div class="composite-head">
+        <h3 id="domain-composite-title">Domain composite index</h3>
+        <span class="pending-badge">Pending</span>
+      </div>
+      <p class="composite-note">A single normalized score for this domain, combining all its indicators per the finalized AAAI methodology. <em>Left blank pending the final composite scoring methodology and complete, validated indicator dataset — placeholder only.</em></p>
+    </div>
+
+    <div class="section-head">
+      <h2>Recommendations for this domain</h2>
+      <p>Curated guidance and auto-flagged gaps, specific to this domain, across all six countries.</p>
+    </div>
+    <div class="reco-list" id="domain-reco-curated"></div>
+    <div class="reco-list" id="domain-reco-auto" style="margin-top:10px;"></div>
+  </section>
+
+  <!-- ============ INFOGRAPHIC BY DOMAIN ============ -->
+  <section id="view-compare" class="view">
+    <div class="section-head" style="margin-top:0;">
+      <h2>Infographic by domain</h2>
+      <p>Pick a domain to see how the six countries compare across all its indicators at a glance.</p>
+    </div>
+    <div class="compare-controls">
+      <select id="compare-domain"></select>
+    </div>
+    <p class="domain-desc" id="infographic-domain-desc"></p>
+    <div class="chart-wrap"><canvas id="domain-infographic-chart" height="90"></canvas></div>
+    <div class="infographic-stats" id="infographic-quant-stats"></div>
+
+    <div class="section-head">
+      <h2>Indicator detail</h2>
+      <p>Drill into a single indicator within this domain.</p>
+    </div>
+    <div class="compare-controls">
+      <select id="compare-indicator"></select>
+    </div>
+    <p class="def-text" id="compare-def"></p>
+    <div class="chart-wrap"><canvas id="compare-chart" height="80"></canvas></div>
+    <table class="indicators" style="margin-top:24px;">
+      <tbody id="compare-table"></tbody>
+    </table>
+  </section>
+
+  <!-- ============ RESOURCES ============ -->
+  <section id="view-resources" class="view">
+    <div class="section-head" style="margin-top:0;">
+      <h2>Resources</h2>
+      <p>Reference documents behind this index.</p>
+    </div>
+    <div class="resource-list">
+      <a class="resource-card" href="https://docs.google.com/document/d/1W13O7YpW298twn2upy949fnp0HHkcpjg/edit" target="_blank" rel="noopener">
+        <div class="r-icon">📘</div>
+        <div>
+          <div class="r-title">AAAI Guidebook</div>
+          <div class="r-desc">The full methodology and indicator-by-indicator guidance, on Google Drive.</div>
+        </div>
+      </a>
+      <a class="resource-card" href="#" target="_blank" rel="noopener">
+        <div class="r-icon">🗺️</div>
+        <div>
+          <div class="r-title">Ageing Data Landscape in ASEAN</div>
+          <div class="r-desc">Regional survey of existing ageing-related data sources. <em>(link to be added)</em></div>
+        </div>
+      </a>
+      <a class="resource-card" href="#" target="_blank" rel="noopener">
+        <div class="r-icon">📄</div>
+        <div>
+          <div class="r-title">AAAI Concept Note</div>
+          <div class="r-desc">The founding rationale and design of the index. <em>(link to be added)</em></div>
+        </div>
+      </a>
+    </div>
+
+    <div class="section-head">
+      <h2>Contribute your country's data</h2>
+    </div>
+    <div class="contribute-banner">
+      <div>
+        <div class="c-title">For the remaining ASEAN member states</div>
+        <div class="c-desc">Not yet represented in this index? Use the open template to submit your country's data for inclusion in a future release.</div>
+      </div>
+      <a class="c-button" href="#" target="_blank" rel="noopener">Open the contribution template →</a>
+    </div>
+  </section>
+
+  <!-- ============ ABOUT ============ -->
+  <section id="view-about" class="view">
+    <div class="about-body">
+      <h2>How to use this dashboard</h2>
+      <ul class="howto-list">
+        <li><b>Overview</b> — the regional snapshot: total population 60+, average dependency ratio, the overall composite index (pending), and a quick card for each country.</li>
+        <li><b>Map</b> — where the countries sit geographically, with circle size showing population 60+. Click a country to jump to its profile.</li>
+        <li><b>Country profiles</b> — pick a country on the left to see its living arrangements, marital status, a policy scorecard by domain, and recommendations specific to that country.</li>
+        <li><b>Domain</b> — the full 62-indicator table, a domain composite index (pending), and recommendations specific to that domain. Filter to gaps only, search by name, or click any row to see every country's answer, year, and source.</li>
+        <li><b>Infographic by domain</b> — a domain-level visual comparison across all six countries, plus drill-down into any single indicator.</li>
+        <li><b>Resources</b> — the guidebook, background reading, and how to contribute data for other ASEAN member states.</li>
+      </ul>
+
+      <h2>About this dashboard</h2>
+      <p>Comparative index across 6 domains — 62 AAAI indicators plus 18 basic demographic indicators — for older persons aged 60+ across 5 ASEAN member states and Japan as a reference country. This prototype brings together two source workbooks: a cross-country demographic basic-information sheet, and a synthesized set of policy &amp; statistics indicators across six domains (policy &amp; statistics, income &amp; livelihood security, health &amp; well-being, social capital &amp; participation, enabling environment, and digital inclusion).</p>
+
+      <h3>How status is determined</h3>
+      <p>Each indicator's "Value (Final)" cell is read and classified as Yes, No, Pending, or a quantitative figure. <b>Pending</b> covers both blank cells and answers still being confirmed ("Not sure", "TBC") — it means data collection isn't finished yet, not that the policy itself is partial. Because the source data was entered by different country teams in free text, this classification is a best-effort heuristic, not an authoritative score.</p>
+
+      <div class="flag-note">
+        <b>Known data quality issues to resolve before publishing:</b>
+        <ul>
+          <li>Some "Value (Final)" cells contain a source URL instead of Yes/No (several Japan entries) — the dashboard currently treats a bare link as "Yes, with a caveat," but this should be corrected at the source.</li>
+          <li>A few cells still read "Not sure", "TBC", "Confirming" or are blank — these now show as Pending rather than a real answer.</li>
+          <li>The original workbook contains a small number of <code>#REF!</code> formula errors on the "never married/single" row that should be fixed before this feeds a public site.</li>
+          <li>The "Year" shown for policy indicators reflects the year of the originally-cited source, which in some rows was later superseded by a different "Source (Final)" — the workbook doesn't carry a separate finalized year, so treat the year as approximate until reconciled.</li>
+        </ul>
+      </div>
+
+      <h3>Updating the data</h3>
+      <p>Everything on this page is read from <code>data.js</code>. To publish new figures: update the country tabs in the source workbook, re-run the export step (see README), and replace <code>data.js</code> — no changes to <code>index.html</code>, <code>styles.css</code> or <code>app.js</code> are needed for a routine data refresh.</p>
+    </div>
+  </section>
+
+</main>
+
+<footer>AAAI — Active Ageing Index · prototype dashboard, not for external publication until data quality items above are resolved</footer>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.5.1/chart.umd.min.js"></script>
+<script src="data.js"></script>
+<script src="app.js"></script>
+</body>
+</html>
