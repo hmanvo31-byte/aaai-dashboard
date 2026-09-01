@@ -1,0 +1,29 @@
+{
+  "ink":            { "value": "#1C2B2A", "type": "color", "description": "Primary text and headings" },
+  "ink-soft":       { "value": "#45554F", "type": "color", "description": "Secondary text" },
+  "paper":          { "value": "#F0ECDD", "type": "color", "description": "Page background" },
+  "paper-raised":   { "value": "#FAF8F0", "type": "color", "description": "Card and panel background" },
+  "line":           { "value": "#D8D0BA", "type": "color", "description": "Strong hairline / border" },
+  "line-soft":      { "value": "#E5DFCC", "type": "color", "description": "Light hairline / row divider" },
+
+  "gold":           { "value": "#B07F1E", "type": "color", "description": "Accent — 'Partial' status, chart highlight" },
+  "gold-soft":      { "value": "#EADCB8", "type": "color", "description": "Accent background tint" },
+  "jade":           { "value": "#2F5C53", "type": "color", "description": "Accent — 'Yes' status" },
+  "jade-soft":      { "value": "#D8E3DC", "type": "color", "description": "Jade background tint" },
+  "brick":          { "value": "#9C4530", "type": "color", "description": "Accent — 'No' / gap status" },
+  "brick-soft":     { "value": "#EBD9CE", "type": "color", "description": "Brick background tint" },
+  "slate":          { "value": "#5B6B6E", "type": "color", "description": "Neutral / quantitative data marker" },
+
+  "c-vn":           { "value": "#2F5C53", "type": "color", "description": "Vietnam chart/legend color" },
+  "c-id":           { "value": "#B07F1E", "type": "color", "description": "Indonesia chart/legend color" },
+  "c-th":           { "value": "#9C4530", "type": "color", "description": "Thailand chart/legend color" },
+  "c-sg":           { "value": "#3E5C87", "type": "color", "description": "Singapore chart/legend color" },
+  "c-my":           { "value": "#7A5A8C", "type": "color", "description": "Malaysia chart/legend color" },
+  "c-jp":           { "value": "#6E6844", "type": "color", "description": "Japan chart/legend color" },
+
+  "font-display":   { "value": "\"Fraunces\", \"Iowan Old Style\", Georgia, serif", "type": "fontFamilies" },
+  "font-body":       { "value": "\"IBM Plex Sans\", -apple-system, BlinkMacSystemFont, sans-serif", "type": "fontFamilies" },
+  "font-mono":       { "value": "\"IBM Plex Mono\", ui-monospace, Menlo, monospace", "type": "fontFamilies" },
+
+  "radius":          { "value": "3px", "type": "borderRadius" }
+}

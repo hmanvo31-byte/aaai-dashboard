@@ -1,0 +1,12 @@
+{
+  "name": "aaai-dashboard-tokens",
+  "private": true,
+  "version": "1.0.0",
+  "description": "Design-token build step for the AAAI dashboard: converts /tokens JSON (synced from Figma via Tokens Studio) into tokens.css",
+  "scripts": {
+    "build": "style-dictionary build --config style-dictionary.config.json"
+  },
+  "devDependencies": {
+    "style-dictionary": "^4.0.0"
+  }
+}

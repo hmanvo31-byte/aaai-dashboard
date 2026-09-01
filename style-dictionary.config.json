@@ -1,0 +1,17 @@
+{
+  "source": ["tokens/**/*.json"],
+  "preprocessors": ["tokens-studio"],
+  "platforms": {
+    "css": {
+      "transformGroup": "css",
+      "buildPath": "./",
+      "files": [
+        {
+          "destination": "tokens.css",
+          "format": "css/variables",
+          "options": { "outputReferences": true }
+        }
+      ]
+    }
+  }
+}

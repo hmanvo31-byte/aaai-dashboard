@@ -1,0 +1,36 @@
+/* ============================================================
+   GENERATED FILE — do not hand-edit.
+   Rebuilt automatically by the "Build design tokens" GitHub Action
+   from /tokens/global.json whenever Tokens Studio pushes a change
+   from Figma. Loaded after styles.css in index.html so these values
+   take precedence.
+   ============================================================ */
+:root {
+  --ink: #1C2B2A;
+  --ink-soft: #45554F;
+  --paper: #F0ECDD;
+  --paper-raised: #FAF8F0;
+  --line: #D8D0BA;
+  --line-soft: #E5DFCC;
+
+  --gold: #B07F1E;
+  --gold-soft: #EADCB8;
+  --jade: #2F5C53;
+  --jade-soft: #D8E3DC;
+  --brick: #9C4530;
+  --brick-soft: #EBD9CE;
+  --slate: #5B6B6E;
+
+  --c-vn: #2F5C53;
+  --c-id: #B07F1E;
+  --c-th: #9C4530;
+  --c-sg: #3E5C87;
+  --c-my: #7A5A8C;
+  --c-jp: #6E6844;
+
+  --font-display: "Fraunces", "Iowan Old Style", Georgia, serif;
+  --font-body: "IBM Plex Sans", -apple-system, BlinkMacSystemFont, sans-serif;
+  --font-mono: "IBM Plex Mono", ui-monospace, Menlo, monospace;
+
+  --radius: 3px;
+}
