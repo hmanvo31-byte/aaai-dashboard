@@ -90,6 +90,14 @@ function demoNum(code, country){
   const n = parseFloat(String(v).replace(/,/g,''));
   return isNaN(n) ? null : n;
 }
+function demoYear(code, country){
+  const row = AAAI_DATA.demographics[code];
+  return row && row.years ? (row.years[country] || '') : '';
+}
+function demoSource(code, country){
+  const row = AAAI_DATA.demographics[code];
+  return row && row.sources ? (row.sources[country] || '') : '';
+}
 function fmtInt(n){ return n===null ? '—' : Math.round(n).toLocaleString('en-US'); }
 function fmtPct(n){ return n===null ? '—' : (n<=1 ? (n*100).toFixed(1) : n.toFixed(1)) + '%'; }
 function pctVal(n){ return n===null ? null : (n<=1 ? n*100 : n); }
@@ -97,7 +105,7 @@ function pctVal(n){ return n===null ? null : (n<=1 ? n*100 : n); }
 /* ============================================================
    TAB NAVIGATION
    ============================================================ */
-const views = ['overview','profiles','domains','compare','recommendations','about'];
+const views = ['overview','map','profiles','domains','compare','resources','about'];
 function showView(name){
   views.forEach(v=>{
     document.getElementById('view-'+v).classList.toggle('active', v===name);
@@ -159,6 +167,67 @@ function renderOverview(){
 let overviewChart=null;
 
 /* ============================================================
+   MAP
+   ============================================================ */
+// Approximate centroid coordinates — good enough for a schematic
+// relative-position map, not a precise political map.
+const COUNTRY_COORDS = {
+  Vietnam:   { lat: 16.0,  lng: 108.0 },
+  Indonesia: { lat: -2.0,  lng: 118.0 },
+  Thailand:  { lat: 15.0,  lng: 101.0 },
+  Singapore: { lat: 1.35,  lng: 103.8 },
+  Malaysia:  { lat: 4.0,   lng: 109.5 },
+  Japan:     { lat: 36.0,  lng: 138.0 },
+};
+const MAP_VIEWBOX = { w: 700, h: 460 };
+function projectLng(lng){ return 50 + (lng - 95) / 50 * 600; }
+function projectLat(lat){ return 40 + (45 - lat) / 55 * 400; }
+
+function mapRadius(pop, allPops){
+  const min = Math.sqrt(Math.min(...allPops));
+  const max = Math.sqrt(Math.max(...allPops));
+  const r = Math.sqrt(pop);
+  const t = max===min ? 0.5 : (r - min) / (max - min);
+  return 12 + t * 34; // 12px .. 46px
+}
+
+function renderMap(){
+  const pops = COUNTRIES.map(c => demoNum('A1', c) || 0);
+  let nodes = '';
+  COUNTRIES.forEach(c=>{
+    const { lat, lng } = COUNTRY_COORDS[c];
+    const x = projectLng(lng), y = projectLat(lat);
+    const pop = demoNum('A1', c) || 0;
+    const r = mapRadius(pop, pops);
+    nodes += `
+      <g class="map-node" data-country="${c}" transform="translate(${x},${y})">
+        <circle r="${r}" fill="${ccolor(c)}" fill-opacity="0.82"></circle>
+        <text x="0" y="${-r-8}" text-anchor="middle">${c}</text>
+        <text class="pop" x="0" y="${-r+18 > 4 ? 4 : -r+18}" text-anchor="middle" fill="#fff" style="font-size:${Math.min(11, r*0.5)}px">${(pop/1e6).toFixed(1)}M</text>
+      </g>`;
+  });
+
+  const svg = `<svg viewBox="0 0 ${MAP_VIEWBOX.w} ${MAP_VIEWBOX.h}" xmlns="http://www.w3.org/2000/svg">
+    <rect x="0" y="0" width="${MAP_VIEWBOX.w}" height="${MAP_VIEWBOX.h}" fill="var(--paper)"></rect>
+    ${nodes}
+  </svg>`;
+  document.getElementById('map-wrap').innerHTML = svg;
+
+  document.querySelectorAll('.map-node').forEach(node=>{
+    node.addEventListener('click', ()=>{
+      currentProfileCountry = node.dataset.country;
+      showView('profiles');
+      renderProfiles();
+    });
+  });
+
+  const legend = document.getElementById('map-legend');
+  legend.innerHTML = COUNTRIES.map(c=>`
+    <div class="item"><span class="swatch" style="background:${ccolor(c)}"></span>${c} — ${fmtInt(demoNum('A1',c))} aged 60+</div>
+  `).join('');
+}
+
+/* ============================================================
    COUNTRY PROFILES
    ============================================================ */
 let currentProfileCountry = COUNTRIES[0];
@@ -168,7 +237,7 @@ function domainGapCounts(country, domain){
   domain.indicators.forEach(ind=>{
     if(indicatorFormat(ind)!=='binary') return;
     const st = normalizeStatus(ind.values[country]);
-    if(!st) return;
+    if(!st){ partial++; return; } // blank / not-yet-collected counts as pending
     if(st.type==='yes') yes++;
     else if(st.type==='no') no++;
     else if(st.type==='partial') partial++;
@@ -196,7 +265,7 @@ function livingArrangementRows(country){
   return rows.map(([code,label])=>{
     let v = pctVal(demoNum(code,country));
     const raw = demoVal(code,country);
-    return {label, v, raw};
+    return {label, v, raw, year: demoYear(code,country), source: demoSource(code,country)};
   });
 }
 function maritalRows(country){
@@ -204,7 +273,7 @@ function maritalRows(country){
   return rows.map(([code,label])=>{
     let v = pctVal(demoNum(code,country));
     const raw = demoVal(code,country);
-    return {label, v, raw};
+    return {label, v, raw, year: demoYear(code,country), source: demoSource(code,country)};
   });
 }
 function renderBarPanel(elId, rows){
@@ -212,12 +281,17 @@ function renderBarPanel(elId, rows){
   el.innerHTML = rows.map(r=>{
     const w = r.v===null ? 0 : Math.min(100, r.v);
     const display = r.v===null ? (r.raw ? String(r.raw).slice(0,18) : '—') : r.v.toFixed(1)+'%';
-    return `<div class="bar-row">
+    const tip = [r.source, r.year ? `(${r.year})` : ''].filter(Boolean).join(' ');
+    return `<div class="bar-row" ${tip ? `title="${tip.replace(/"/g,'&quot;')}"` : ''}>
       <span class="lbl">${r.label}</span>
       <span class="track"><span class="fill" style="width:${w}%"></span></span>
       <span class="val">${display}</span>
     </div>`;
   }).join('');
+  // Compact source/year footnote — de-duplicated across rows
+  const notes = [...new Set(rows.filter(r=>r.source).map(r=> r.source + (r.year?` (${r.year})`:'')))];
+  const noteEl = document.getElementById(elId + '-note');
+  if(noteEl) noteEl.textContent = notes.length ? 'Source: ' + notes.join(' · ') : '';
 }
 
 function renderProfiles(){
@@ -243,11 +317,12 @@ function renderProfiles(){
       <div class="counts">
         <span class="pill yes">${yes} yes</span>
         <span class="pill no">${no} gap</span>
-        ${partial? `<span class="pill partial">${partial} partial</span>`:''}
+        ${partial? `<span class="pill partial">${partial} pending</span>`:''}
       </div>`;
     cell.addEventListener('click', ()=>{ currentDomainIndex=idx; showView('domains'); renderDomains(); });
     strip.appendChild(cell);
   });
+  renderCountryRecommendations(c);
 }
 
 /* ============================================================
@@ -273,6 +348,7 @@ function renderDomains(){
   renderDomainTabs();
   const domain = AAAI_DATA.domains[currentDomainIndex];
   document.getElementById('domain-desc').textContent = domain.desc;
+  document.getElementById('domain-composite-title').textContent = `${domain.name} — composite index`;
 
   const thead = document.getElementById('indicators-thead');
   thead.innerHTML = `<tr><th style="width:52px">Code</th><th style="width:230px">Indicator</th>` +
@@ -295,9 +371,14 @@ function renderDomains(){
     tr.innerHTML = `<td class="code">${ind.code}</td><td class="name">${ind.name}</td>` +
       COUNTRIES.map(c=>{
         const st = normalizeStatus(ind.values[c]);
-        if(!st) return `<td class="status-cell">—</td>`;
-        if(st.type==='data') return `<td class="status-cell num" style="font-family:var(--font-mono);font-size:12px">${st.display}</td>`;
-        return `<td class="status-cell" title="${st.display.replace(/"/g,'&quot;')}"><span class="status-dot ${st.type}"></span></td>`;
+        const yr = (ind.years && ind.years[c]) ? ` (${ind.years[c]})` : '';
+        if(!st){
+          if(format==='binary') return `<td class="status-cell" title="Pending"><span class="status-dot partial"></span></td>`;
+          return `<td class="status-cell num" style="font-family:var(--font-mono);font-size:12px;color:var(--ink-soft);font-style:italic">Pending</td>`;
+        }
+        if(st.type==='data') return `<td class="status-cell num" style="font-family:var(--font-mono);font-size:12px" title="${yr.trim()}">${st.display}${yr}</td>`;
+        const tip = (st.type==='partial' ? ('Pending — '+st.display) : st.display) + yr;
+        return `<td class="status-cell" title="${tip.replace(/"/g,'&quot;')}"><span class="status-dot ${st.type}"></span></td>`;
       }).join('');
     tbody.appendChild(tr);
 
@@ -310,10 +391,16 @@ function renderDomains(){
       <div class="detail-grid">${COUNTRIES.map(c=>{
         const st = normalizeStatus(ind.values[c]);
         const src = ind.sources[c] || '';
+        const yr = (ind.years && ind.years[c]) || '';
+        let cval;
+        if(!st) cval = '<em>Pending</em>';
+        else if(st.type==='partial') cval = `<em>Pending</em> — ${st.display}`;
+        else cval = st.display;
+        const srcYr = [src, yr ? `(${yr})` : ''].filter(Boolean).join(' ');
         return `<div class="detail-cell">
           <div class="cname">${c}</div>
-          <div class="cval">${st ? st.display : '<em>not reported</em>'}</div>
-          ${src ? `<div class="csrc">${src}</div>` : ''}
+          <div class="cval">${cval}</div>
+          ${srcYr ? `<div class="csrc">${srcYr}</div>` : ''}
         </div>`;
       }).join('')}</div>`;
     dtr.appendChild(td);
@@ -323,6 +410,7 @@ function renderDomains(){
   });
 
   document.getElementById('indicator-count').textContent = `${shown} of ${domain.indicators.length} indicators`;
+  renderDomainRecommendations(domain);
 }
 
 document.getElementById('search-indicators').addEventListener('input', (e)=>{
@@ -335,13 +423,65 @@ document.getElementById('toggle-gaps').addEventListener('change', (e)=>{
 });
 
 /* ============================================================
-   COMPARE
+   COMPARE / INFOGRAPHIC BY DOMAIN
    ============================================================ */
 let compareChart=null;
+let domainInfographicChart=null;
+
+function renderDomainInfographic(domIdx){
+  const domain = AAAI_DATA.domains[domIdx];
+  document.getElementById('infographic-domain-desc').textContent = domain.desc;
+
+  const binaryInds = domain.indicators.filter(ind => indicatorFormat(ind)==='binary');
+  const quantInds = domain.indicators.filter(ind => indicatorFormat(ind)==='other');
+
+  const pctYes = COUNTRIES.map(c=>{
+    if(!binaryInds.length) return 0;
+    const yesCount = binaryInds.filter(ind=>{
+      const st = normalizeStatus(ind.values[c]);
+      return st && st.type==='yes';
+    }).length;
+    return Math.round((yesCount / binaryInds.length) * 100);
+  });
+
+  const ctx = document.getElementById('domain-infographic-chart');
+  if(domainInfographicChart) domainInfographicChart.destroy();
+  domainInfographicChart = new Chart(ctx, {
+    type:'bar',
+    data:{ labels:COUNTRIES, datasets:[{
+      label:`% of ${domain.name} indicators answered Yes`,
+      data: pctYes,
+      backgroundColor: COUNTRIES.map(c=>ccolor(c)),
+      borderRadius:2, maxBarThickness:52
+    }]},
+    options:{ plugins:{legend:{display:false}, tooltip:{callbacks:{label:(i)=> i.formattedValue+'% Yes'}}},
+      scales:{ y:{min:0,max:100,ticks:{callback:v=>v+'%'}, grid:{color:'#DED2B0'}}, x:{grid:{display:false}} } }
+  });
+
+  const statsEl = document.getElementById('infographic-quant-stats');
+  if(!quantInds.length){
+    statsEl.innerHTML = '';
+  } else {
+    statsEl.innerHTML = quantInds.slice(0,3).map(ind=>
+      COUNTRIES.map(c=>{
+        const st = normalizeStatus(ind.values[c]);
+        return `<div class="stat-card">
+          <div class="sc-label">${ind.code} · ${c}</div>
+          <div class="sc-value">${st ? st.display : 'Pending'}</div>
+        </div>`;
+      }).join('')
+    ).join('');
+  }
+}
+
 function populateCompareSelects(){
   const domSel = document.getElementById('compare-domain');
   domSel.innerHTML = AAAI_DATA.domains.map((d,i)=>`<option value="${i}">${d.name}</option>`).join('');
-  domSel.addEventListener('change', ()=> populateIndicatorSelect());
+  domSel.addEventListener('change', ()=>{
+    renderDomainInfographic(+domSel.value);
+    populateIndicatorSelect();
+  });
+  renderDomainInfographic(0);
   populateIndicatorSelect();
   document.getElementById('compare-indicator').addEventListener('change', renderCompare);
 }
@@ -362,16 +502,16 @@ function renderCompare(){
   if(compareChart) compareChart.destroy();
 
   if(format==='binary'){
-    const scoreMap = {yes:1, partial:0.5, no:0, data:null, unclear:null};
+    const scoreMap = {yes:1, partial:0.5, no:0, data:null, unclear:0.5};
     compareChart = new Chart(ctx, {
       type:'bar',
       data:{ labels:COUNTRIES, datasets:[{
         label: ind.name,
-        data: COUNTRIES.map(c=>{ const st=normalizeStatus(ind.values[c]); return st? scoreMap[st.type]:0; }),
-        backgroundColor: COUNTRIES.map(c=>{ const st=normalizeStatus(ind.values[c]); return st && st.type==='no' ? '#9C4530' : (st && st.type==='partial' ? '#B07F1E' : ccolor(c)); }),
+        data: COUNTRIES.map(c=>{ const st=normalizeStatus(ind.values[c]); return st ? scoreMap[st.type] : 0.5; }),
+        backgroundColor: COUNTRIES.map(c=>{ const st=normalizeStatus(ind.values[c]); if(!st) return '#B07F1E'; return st.type==='no' ? '#9C4530' : (st.type==='partial'||st.type==='unclear' ? '#B07F1E' : ccolor(c)); }),
         borderRadius:2, maxBarThickness:52
       }]},
-      options:{ plugins:{legend:{display:false}}, scales:{ y:{min:0,max:1,ticks:{callback:v=> v===1?'Yes':v===0.5?'Partial':v===0?'No':''}}, x:{grid:{display:false}} } }
+      options:{ plugins:{legend:{display:false}}, scales:{ y:{min:0,max:1,ticks:{callback:v=> v===1?'Yes':v===0.5?'Pending':v===0?'No':''}}, x:{grid:{display:false}} } }
     });
   } else {
     const vals = COUNTRIES.map(c=>{ const st=normalizeStatus(ind.values[c]); if(!st) return null; const n=parseFloat(st.display.replace(/[^0-9.\-]/g,'')); return isNaN(n)?null:n; });
@@ -383,9 +523,11 @@ function renderCompare(){
   }
 
   const tbl = document.getElementById('compare-table');
-  tbl.innerHTML = `<tr><th>Country</th><th>Value</th><th>Source</th></tr>` + COUNTRIES.map(c=>{
+  tbl.innerHTML = `<tr><th>Country</th><th>Value</th><th>Year</th><th>Source</th></tr>` + COUNTRIES.map(c=>{
     const st = normalizeStatus(ind.values[c]);
-    return `<tr><td>${c}</td><td>${st?st.display:'—'}</td><td style="color:var(--ink-soft);font-size:12px">${ind.sources[c]||''}</td></tr>`;
+    const val = !st ? 'Pending' : (st.type==='partial' ? `Pending — ${st.display}` : st.display);
+    const yr = (ind.years && ind.years[c]) || '—';
+    return `<tr><td>${c}</td><td>${val}</td><td style="color:var(--ink-soft);font-size:12px">${yr}</td><td style="color:var(--ink-soft);font-size:12px">${ind.sources[c]||''}</td></tr>`;
   }).join('');
 }
 
@@ -409,29 +551,49 @@ function autoGaps(){
   return list.sort((a,b)=> b.count - a.count);
 }
 
-function renderRecommendations(){
-  const curated = document.getElementById('curated-list');
-  curated.innerHTML = CURATED_RECOMMENDATIONS.map(r=>`
+function curatedItemHTML(r, showDomain, showCountry){
+  return `
     <div class="reco-item">
-      <div class="country-tag"><span class="flagdot" style="width:9px;height:9px;border-radius:50%;display:inline-block;background:${ccolor(r.country)}"></span>${r.country}</div>
+      <div class="country-tag"><span class="flagdot" style="width:9px;height:9px;border-radius:50%;display:inline-block;background:${ccolor(r.country)}"></span>${showCountry ? r.country : ''}</div>
       <div class="priority ${r.priority}">${r.priority}</div>
       <div>
         <p>${r.text}</p>
-        <div class="domain-ref">${r.domain} — indicator ${r.code}</div>
+        <div class="domain-ref">${showDomain ? r.domain+' — ' : ''}indicator ${r.code}</div>
       </div>
-    </div>`).join('');
-
-  const gaps = autoGaps().slice(0,10);
-  const auto = document.getElementById('auto-list');
-  auto.innerHTML = gaps.map(g=>`
+    </div>`;
+}
+function autoItemHTML(g, showDomain){
+  return `
     <div class="reco-item">
       <div class="country-tag"><span class="flagdot" style="width:9px;height:9px;border-radius:50%;display:inline-block;background:${ccolor(g.country)}"></span>${g.country}</div>
       <div class="priority ${g.count>=3?'high':g.count===2?'medium':'low'}">${g.count} gap${g.count>1?'s':''}</div>
       <div>
-        <p>${g.count} indicator${g.count>1?'s':''} answered "No" in <b>${g.domain}</b>.</p>
+        <p>${g.count} indicator${g.count>1?'s':''} answered "No"${showDomain?` in <b>${g.domain}</b>`:''}.</p>
         <div class="domain-ref">Indicators: ${g.codes}</div>
       </div>
-    </div>`).join('');
+    </div>`;
+}
+
+function renderDomainRecommendations(domain){
+  const curatedEl = document.getElementById('domain-reco-curated');
+  const matches = CURATED_RECOMMENDATIONS.filter(r=> r.domain === domain.name);
+  curatedEl.innerHTML = matches.length ? matches.map(r=>curatedItemHTML(r,false,true)).join('')
+    : `<div class="reco-item" style="grid-template-columns:1fr;"><p style="color:var(--ink-soft);font-size:13px;">No curated recommendations for this domain yet.</p></div>`;
+
+  const gaps = autoGaps().filter(g=> g.domain === domain.name);
+  const autoEl = document.getElementById('domain-reco-auto');
+  autoEl.innerHTML = gaps.length ? gaps.map(g=>autoItemHTML(g,false)).join('') : '';
+}
+
+function renderCountryRecommendations(country){
+  const curatedEl = document.getElementById('profile-reco-curated');
+  const matches = CURATED_RECOMMENDATIONS.filter(r=> r.country === country);
+  curatedEl.innerHTML = matches.length ? matches.map(r=>curatedItemHTML(r,true,false)).join('')
+    : `<div class="reco-item" style="grid-template-columns:1fr;"><p style="color:var(--ink-soft);font-size:13px;">No curated recommendations for ${country} yet.</p></div>`;
+
+  const gaps = autoGaps().filter(g=> g.country === country);
+  const autoEl = document.getElementById('profile-reco-auto');
+  autoEl.innerHTML = gaps.length ? gaps.map(g=>autoItemHTML(g,true)).join('') : '';
 }
 
 /* ============================================================
@@ -440,9 +602,9 @@ function renderRecommendations(){
 function init(){
   document.getElementById('data-updated').textContent = AAAI_DATA.meta ? AAAI_DATA.meta.updated : '';
   renderOverview();
+  renderMap();
   renderProfiles();
   renderDomains();
   populateCompareSelects();
-  renderRecommendations();
 }
 init();
