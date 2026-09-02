@@ -105,7 +105,7 @@ function pctVal(n){ return n===null ? null : (n<=1 ? n*100 : n); }
 /* ============================================================
    TAB NAVIGATION
    ============================================================ */
-const views = ['overview','map','profiles','domains','compare','resources','about'];
+const views = ['overview','map','profiles','domains','compare','about'];
 function showView(name){
   views.forEach(v=>{
     document.getElementById('view-'+v).classList.toggle('active', v===name);
@@ -294,6 +294,37 @@ function renderBarPanel(elId, rows){
   if(noteEl) noteEl.textContent = notes.length ? 'Source: ' + notes.join(' · ') : '';
 }
 
+const POPULATION_CODES = [
+  'A1','A2','A3','A4','A5','B1','B2','B3','B4','B5'
+];
+function renderPopulationTable(country){
+  const tbl = document.getElementById('population-table');
+  const rows = POPULATION_CODES.map(code=>{
+    const row = AAAI_DATA.demographics[code];
+    if(!row) return '';
+    const raw = row.values[country];
+    const year = (row.years && row.years[country]) || '—';
+    const source = (row.sources && row.sources[country]) || '';
+    let display;
+    if(raw===undefined || raw===null || raw==='') display = 'Pending';
+    else {
+      const n = parseFloat(String(raw).replace(/,/g,''));
+      if(isNaN(n)) display = String(raw);
+      else if(/ratio/i.test(row.label)) display = n.toFixed(1);
+      else if(/%|percent/i.test(row.label)) display = fmtPct(n);
+      else display = n < 1000 ? n.toLocaleString('en-US',{maximumFractionDigits:2}) : fmtInt(n);
+    }
+    return `<tr>
+      <td class="code">${code}</td>
+      <td class="name">${row.label}</td>
+      <td class="num" style="font-family:var(--font-mono)">${display}</td>
+      <td style="color:var(--ink-soft);font-size:12px">${year}</td>
+      <td style="color:var(--ink-soft);font-size:12px">${source}</td>
+    </tr>`;
+  }).join('');
+  tbl.innerHTML = `<thead><tr><th style="width:44px">Code</th><th>Indicator</th><th>Value</th><th>Year</th><th>Source</th></tr></thead><tbody>${rows}</tbody>`;
+}
+
 function renderProfiles(){
   renderCountryRail();
   const c = currentProfileCountry;
@@ -302,6 +333,7 @@ function renderProfiles(){
   document.getElementById('profile-meta').textContent =
     `${fmtInt(a1)} people aged 60+ (${a2===null?'—':a2.toFixed(1)+'%'} of the population) · ${fmtInt(b3)} aged 80+ · dependency ratio ${b5===null?'—':b5.toFixed(1)}`;
 
+  renderPopulationTable(c);
   renderBarPanel('panel-living', livingArrangementRows(c));
   renderBarPanel('panel-marital', maritalRows(c));
 
