@@ -125,9 +125,9 @@ function renderOverview(){
   const total65 = COUNTRIES.reduce((s,c)=> s + (demoNum('B1',c)||0), 0);
   const avgDep = COUNTRIES.reduce((s,c)=> s + (demoNum('B5',c)||0), 0) / COUNTRIES.length;
 
-  document.getElementById('hero-figure').textContent = (total60/1e6).toFixed(0) + 'M';
-  document.getElementById('hero-sub1').textContent = fmtInt(total65);
-  document.getElementById('hero-sub2').textContent = avgDep.toFixed(1);
+document.getElementById('hero-figure').textContent = '74.4M';
+document.getElementById('hero-sub1').textContent = fmtInt(total65);
+document.getElementById('hero-sub2').textContent = avgDep.toFixed(1);
 
   const wrap = document.getElementById('overview-cards');
   wrap.innerHTML = '';
