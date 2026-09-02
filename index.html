@@ -39,7 +39,6 @@
       <button data-view="profiles">Country profiles</button>
       <button data-view="domains">Domain</button>
       <button data-view="compare">Infographic by domain</button>
-      <button data-view="resources">Resources</button>
       <button data-view="about">About the data</button>
     </nav>
   </div>
@@ -92,6 +91,46 @@
       <h2>Share of population aged 60+</h2>
     </div>
     <div class="chart-wrap"><canvas id="overview-chart" height="90"></canvas></div>
+
+    <div class="section-head">
+      <h2>Resources</h2>
+      <p>Reference documents behind this index.</p>
+    </div>
+    <div class="resource-list">
+      <a class="resource-card" href="https://docs.google.com/document/d/1W13O7YpW298twn2upy949fnp0HHkcpjg/edit" target="_blank" rel="noopener">
+        <div class="r-icon">📘</div>
+        <div>
+          <div class="r-title">AAAI Guidebook</div>
+          <div class="r-desc">The full methodology and indicator-by-indicator guidance, on Google Drive.</div>
+        </div>
+        <div class="r-arrow">→</div>
+      </a>
+      <a class="resource-card" href="#" target="_blank" rel="noopener">
+        <div class="r-icon">🗺️</div>
+        <div>
+          <div class="r-title">Ageing Data Landscape in ASEAN</div>
+          <div class="r-desc">Regional survey of existing ageing-related data sources. <em>(link to be added)</em></div>
+        </div>
+        <div class="r-arrow">→</div>
+      </a>
+      <a class="resource-card" href="#" target="_blank" rel="noopener">
+        <div class="r-icon">📄</div>
+        <div>
+          <div class="r-title">AAAI Concept Note</div>
+          <div class="r-desc">The founding rationale and design of the index. <em>(link to be added)</em></div>
+        </div>
+        <div class="r-arrow">→</div>
+      </a>
+    </div>
+
+    <div class="contribute-banner">
+      <div>
+        <div class="c-eyebrow">Contribute your country's data</div>
+        <div class="c-title">For the remaining ASEAN member states</div>
+        <div class="c-desc">Not yet represented in this index? Use the open template to submit your country's data for inclusion in a future release.</div>
+      </div>
+      <a class="c-button" href="#" target="_blank" rel="noopener">Open the contribution template →</a>
+    </div>
   </section>
 
   <!-- ============ MAP ============ -->
@@ -210,59 +249,16 @@
     </table>
   </section>
 
-  <!-- ============ RESOURCES ============ -->
-  <section id="view-resources" class="view">
-    <div class="section-head" style="margin-top:0;">
-      <h2>Resources</h2>
-      <p>Reference documents behind this index.</p>
-    </div>
-    <div class="resource-list">
-      <a class="resource-card" href="https://docs.google.com/document/d/1W13O7YpW298twn2upy949fnp0HHkcpjg/edit" target="_blank" rel="noopener">
-        <div class="r-icon">📘</div>
-        <div>
-          <div class="r-title">AAAI Guidebook</div>
-          <div class="r-desc">The full methodology and indicator-by-indicator guidance, on Google Drive.</div>
-        </div>
-      </a>
-      <a class="resource-card" href="#" target="_blank" rel="noopener">
-        <div class="r-icon">🗺️</div>
-        <div>
-          <div class="r-title">Ageing Data Landscape in ASEAN</div>
-          <div class="r-desc">Regional survey of existing ageing-related data sources. <em>(link to be added)</em></div>
-        </div>
-      </a>
-      <a class="resource-card" href="#" target="_blank" rel="noopener">
-        <div class="r-icon">📄</div>
-        <div>
-          <div class="r-title">AAAI Concept Note</div>
-          <div class="r-desc">The founding rationale and design of the index. <em>(link to be added)</em></div>
-        </div>
-      </a>
-    </div>
-
-    <div class="section-head">
-      <h2>Contribute your country's data</h2>
-    </div>
-    <div class="contribute-banner">
-      <div>
-        <div class="c-title">For the remaining ASEAN member states</div>
-        <div class="c-desc">Not yet represented in this index? Use the open template to submit your country's data for inclusion in a future release.</div>
-      </div>
-      <a class="c-button" href="#" target="_blank" rel="noopener">Open the contribution template →</a>
-    </div>
-  </section>
-
   <!-- ============ ABOUT ============ -->
   <section id="view-about" class="view">
     <div class="about-body">
       <h2>How to use this dashboard</h2>
       <ul class="howto-list">
-        <li><b>Overview</b> — the regional snapshot: total population 60+, average dependency ratio, the overall composite index (pending), and a quick card for each country.</li>
+        <li><b>Overview</b> — the regional snapshot: total population 60+, average dependency ratio, the overall composite index (pending), a quick card for each country, and Resources — the guidebook, background reading, and how to contribute data for other ASEAN member states.</li>
         <li><b>Map</b> — where the countries sit geographically, with circle size showing population 60+. Click a country to jump to its profile.</li>
         <li><b>Country profiles</b> — pick a country on the left to see its living arrangements, marital status, a policy scorecard by domain, and recommendations specific to that country.</li>
         <li><b>Domain</b> — the full 62-indicator table, a domain composite index (pending), and recommendations specific to that domain. Filter to gaps only, search by name, or click any row to see every country's answer, year, and source.</li>
         <li><b>Infographic by domain</b> — a domain-level visual comparison across all six countries, plus drill-down into any single indicator.</li>
-        <li><b>Resources</b> — the guidebook, background reading, and how to contribute data for other ASEAN member states.</li>
       </ul>
 
       <h2>About this dashboard</h2>
